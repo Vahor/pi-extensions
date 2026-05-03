@@ -1,14 +1,20 @@
 import { Schema } from "effect";
 import { PiEvent } from "./events.js";
 
-export const HookEntrySchema = Schema.Union(
-	Schema.String,
-	Schema.Struct({
-		command: Schema.String,
-		cwd: Schema.optional(Schema.String),
-		timeout: Schema.optional(Schema.Number),
-		print: Schema.optional(Schema.Boolean),
-	}),
+const HookEntryStruct = Schema.Struct({
+	command: Schema.String,
+	cwd: Schema.optional(Schema.String),
+	timeout: Schema.optional(Schema.Number),
+	print: Schema.optional(Schema.Boolean),
+});
+
+export const HookEntrySchema = Schema.transform(
+	Schema.Union(Schema.String, HookEntryStruct),
+	HookEntryStruct,
+	{
+		decode: (from) => (typeof from === "string" ? { command: from } : from),
+		encode: (to) => to,
+	},
 );
 
 export const CommandHooksConfigSchema = Schema.Struct({

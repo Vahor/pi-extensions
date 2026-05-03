@@ -1,6 +1,6 @@
 {
-	"name": "@vahor/pi-hooks",
-	"version": "0.0.2",
+	"name": "@vahor/pi-hotkeys",
+	"version": "0.0.1",
 	"type": "module",
 	"main": "./dist/index.js",
 	"files": [
@@ -9,7 +9,8 @@
 	"keywords": [
 		"pi-package",
 		"pi-extension",
-		"hooks",
+		"hotkeys",
+		"keybindings",
 		"pi"
 	],
 	"pi": {
@@ -28,7 +29,8 @@
 		"effect": "^3.21.2"
 	},
 	"peerDependencies": {
-		"@mariozechner/pi-coding-agent": "*"
+		"@mariozechner/pi-coding-agent": "*",
+		"@mariozechner/pi-tui": "*"
 	},
 	"devDependencies": {
 		"@types/bun": "^1.3.13"

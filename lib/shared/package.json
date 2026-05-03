@@ -7,11 +7,16 @@
 		"./config": {
 			"types": "./src/config/index.ts",
 			"import": "./src/config/index.ts"
+		},
+		"./runner": {
+			"types": "./src/runner/index.ts",
+			"import": "./src/runner/index.ts"
 		}
 	},
 	"scripts": {
-		"build": "bun run build:config",
+		"build": "bun run build:config && bun run build:runner",
 		"build:config": "bun build --target=bun --outdir=dist/config src/config/index.ts --format=esm",
+		"build:runner": "bun build --target=bun --outdir=dist/runner src/runner/index.ts --format=esm",
 		"typecheck": "bunx tsc --noEmit",
 		"test": "bun test"
 	},
