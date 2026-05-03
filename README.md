@@ -2,7 +2,7 @@
 
 [![Code quality](https://github.com/vahor/pi-extensions/actions/workflows/quality.yml/badge.svg)](https://github.com/vahor/pi-extensions/actions/workflows/quality.yml)
 
-Pi extensions monorepo for [pi](https://pi.dev) — the minimal terminal coding harness.
+Pi extensions monorepo for [pi](https://pi.dev)
 
 ## Packages
 
@@ -22,7 +22,8 @@ pi install npm:@vahor/pi-command-hooks
 // .pi/command-hooks.json
 {
   "hooks": {
-      "agent_end": ["bun format", "bun typecheck"]
+      "agent_end": ["bun format", "bun typecheck"],
+      "session_start": [{ "command": "echo 'session start'", "print": true }]
   }
 }
 ```
