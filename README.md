@@ -9,7 +9,6 @@ Pi extensions monorepo for [pi](https://pi.dev) — the minimal terminal coding 
 | Package | Description |
 |---------|-------------|
 | [@vahor/pi-command-hooks](./packages/pi-command-hooks) | Run shell commands on pi lifecycle events |
-| [@vahor/shared](./lib/shared) | Internal library — config parsing, settings merging |
 
 ### @vahor/pi-command-hooks
 
