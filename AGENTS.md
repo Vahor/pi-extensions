@@ -16,7 +16,7 @@ Always start by making a plan for your changes. Gather requirements, read the is
   ```bash
   cat > .changeset/your-changeset.md <<'EOF'
   ---
-  "@vahor/command-hooks": patch
+  "@vahor/pi-command-hooks": patch
   ---
 
   message content
@@ -39,10 +39,10 @@ Always start by making a plan for your changes. Gather requirements, read the is
 - **Pi discovery**: Extensions use `pi.extensions` in `package.json` → `["./dist/index.js"]`
 - **Config pattern**: Global (`~/.pi/agent/<file>`) merged with project (`.pi/<file>`), project overrides
 
-### @vahor/command-hooks
+### @vahor/pi-command-hooks
 
 Pi extension that runs shell commands on lifecycle events.
-- Entry point: `packages/command-hooks/src/index.ts`
+- Entry point: `packages/pi-command-hooks/src/index.ts`
 - Events: 26 pi lifecycle events defined in `src/events.ts`
 - Config: `.pi/command-hooks.json` (project) or `~/.pi/agent/command-hooks.json` (global)
 - Config validation: Effect-TS Schema with custom error messages

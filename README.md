@@ -8,28 +8,22 @@ Pi extensions monorepo for [pi](https://pi.dev) — the minimal terminal coding 
 
 | Package | Description |
 |---------|-------------|
-| [@vahor/command-hooks](./packages/command-hooks) | Run shell commands on pi lifecycle events |
+| [@vahor/pi-command-hooks](./packages/pi-command-hooks) | Run shell commands on pi lifecycle events |
 | [@vahor/shared](./lib/shared) | Internal library — config parsing, settings merging |
 
-### @vahor/command-hooks
+### @vahor/pi-command-hooks
 
 Run shell commands in response to [pi events](https://pi.dev). Configure once in `.pi/command-hooks.json`.
 
 ```bash
-pi install npm:@vahor/command-hooks
+pi install npm:@vahor/pi-command-hooks
 ```
 
 ```jsonc
 // .pi/command-hooks.json
 {
   "hooks": {
-    "tool_call": [
-      "echo 'tool called'",
-      { "command": "bun run lint", "cwd": ".", "timeout": 30000 }
-    ],
-    "turn_end": ["bun run typecheck"],
-    "agent_end": [{ "command": "echo 'Done!'", "print": true }],
-    "session_shutdown": ["echo 'bye'"]
+      "agent_end": ["bun format", "bun typecheck"]
   }
 }
 ```

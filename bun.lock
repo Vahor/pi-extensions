@@ -19,8 +19,8 @@
         "effect": "^3.21.2",
       },
     },
-    "packages/command-hooks": {
-      "name": "@vahor/command-hooks",
+    "packages/pi-command-hooks": {
+      "name": "@vahor/pi-command-hooks",
       "version": "0.0.1",
       "dependencies": {
         "@mariozechner/pi-coding-agent": "*",
@@ -345,7 +345,7 @@
 
     "@types/yauzl": ["@types/yauzl@2.10.3", "", { "dependencies": { "@types/node": "*" } }, "sha512-oJoftv0LSuaDZE3Le4DbKX+KS9G36NzOeSap90UIK0yMA/NhKJhqlSGtNDORNRaIbQfzjXDrQa0ytJ6mNRGz/Q=="],
 
-    "@vahor/command-hooks": ["@vahor/command-hooks@workspace:packages/command-hooks"],
+    "@vahor/pi-command-hooks": ["@vahor/pi-command-hooks@workspace:packages/pi-command-hooks"],
 
     "@vahor/shared": ["@vahor/shared@workspace:lib/shared"],
 
