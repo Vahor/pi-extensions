@@ -6,6 +6,12 @@
 	"files": [
 		"dist"
 	],
+	"keywords": [
+		"pi-package",
+		"pi-extension",
+		"hooks",
+		"pi"
+	],
 	"pi": {
 		"extensions": [
 			"./dist/index.js"
