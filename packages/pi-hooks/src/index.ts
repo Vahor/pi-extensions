@@ -2,7 +2,7 @@
  * Command Hooks Extension
  *
  * Runs shell commands in response to pi events, configured via
- * `.pi/command-hooks.json` (project) or `~/.pi/agent/command-hooks.json` (global).
+ * `.pi/hooks.json` (project) or `~/.pi/agent/hooks.json` (global).
  *
  * Project config overrides global config per-event.
  *
@@ -38,7 +38,7 @@ import { runCommands } from "./runner.js";
 
 function loadConfig(cwd: string) {
 	return Effect.runSync(
-		readConfig("command-hooks.json", CommandHooksConfigSchema, cwd),
+		readConfig("hooks.json", CommandHooksConfigSchema, cwd),
 	);
 }
 

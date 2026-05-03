@@ -1,13 +1,13 @@
-# @vahor/pi-command-hooks
+# @vahor/pi-hooks
 
-Run shell commands in response to [pi events](https://pi.dev). Configure once in `.pi/command-hooks.json`.
+Run shell commands in response to [pi events](https://pi.dev). Configure once in `.pi/hooks.json`.
 
 ```bash
-pi install npm:@vahor/pi-command-hooks
+pi install npm:@vahor/pi-hooks
 ```
 
 ```jsonc
-// .pi/command-hooks.json
+// .pi/hooks.json
 {
   "hooks": {
       "agent_end": ["bun format", "bun typecheck"],

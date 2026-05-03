@@ -19,8 +19,8 @@
         "effect": "^3.21.2",
       },
     },
-    "packages/pi-command-hooks": {
-      "name": "@vahor/pi-command-hooks",
+    "packages/pi-hooks": {
+      "name": "@vahor/pi-hooks",
       "version": "0.0.1",
       "dependencies": {
         "@vahor/shared": "workspace:*",
@@ -347,7 +347,7 @@
 
     "@types/yauzl": ["@types/yauzl@2.10.3", "", { "dependencies": { "@types/node": "*" } }, "sha512-oJoftv0LSuaDZE3Le4DbKX+KS9G36NzOeSap90UIK0yMA/NhKJhqlSGtNDORNRaIbQfzjXDrQa0ytJ6mNRGz/Q=="],
 
-    "@vahor/pi-command-hooks": ["@vahor/pi-command-hooks@workspace:packages/pi-command-hooks"],
+    "@vahor/pi-hooks": ["@vahor/pi-hooks@workspace:packages/pi-hooks"],
 
     "@vahor/shared": ["@vahor/shared@workspace:lib/shared"],
 

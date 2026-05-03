@@ -8,7 +8,7 @@ Pi extensions monorepo for [pi](https://pi.dev)
 
 | Package | Description |
 |---------|-------------|
-| [@vahor/pi-command-hooks](./packages/pi-command-hooks) | Run shell commands on pi lifecycle events |
+| [@vahor/pi-hooks](./packages/pi-hooks) | Run shell commands on pi lifecycle events |
 
 ## License
 

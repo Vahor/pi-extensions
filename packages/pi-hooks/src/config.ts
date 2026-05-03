@@ -21,7 +21,7 @@ export const CommandHooksConfigSchema = Schema.Struct({
 }).annotations({
 	message: () => ({
 		override: true,
-		message: `Invalid command-hooks.json. Expected format:
+		message: `Invalid hooks.json. Expected format:
 {
   "hooks": {
     "<event>": ["command", { "command": "...", "cwd": ".", "timeout": 30000 }]

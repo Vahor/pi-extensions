@@ -1,5 +1,5 @@
 ---
-"@vahor/pi-command-hooks": patch
+"@vahor/pi-hooks": patch
 ---
 
 Init npm package
