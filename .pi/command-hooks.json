@@ -1,0 +1,6 @@
+{
+	"hooks": {
+		"session_start": [{ "command": "echo 'session start'", "print": true }],
+		"agent_end": ["bun format", "bun typecheck"]
+	}
+}
