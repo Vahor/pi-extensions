@@ -1,8 +1,9 @@
 import { describe, expect, test } from "bun:test";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { Effect, Exit, Schema } from "effect";
+import { Cause, Effect, Exit, Schema } from "effect";
 import {
+	FileNotFoundError,
 	getGlobalConfigPath,
 	getProjectConfigPath,
 	getProjectSettingsPath,
@@ -36,21 +37,27 @@ describe("getProjectSettingsPath", () => {
 describe("parseConfig", () => {
 	test("parses valid JSON", () => {
 		const raw = JSON.stringify({ name: "my-project", port: 3000 });
-		const config = Effect.runSync(parseConfig(raw, ExampleSchema));
+		const config = Effect.runSync(
+			parseConfig("config.json", raw, ExampleSchema),
+		);
 		expect(config.name).toBe("my-project");
 		expect(config.port).toBe(3000);
 	});
 
 	test("parses JSON with optional fields missing", () => {
 		const raw = JSON.stringify({ name: "minimal" });
-		const config = Effect.runSync(parseConfig(raw, ExampleSchema));
+		const config = Effect.runSync(
+			parseConfig("config.json", raw, ExampleSchema),
+		);
 		expect(config.name).toBe("minimal");
 		expect(config.port).toBeUndefined();
 	});
 
 	test("fails with ValidationError on missing required fields", () => {
 		const raw = JSON.stringify({ port: 3000 });
-		const exit = Effect.runSyncExit(parseConfig(raw, ExampleSchema));
+		const exit = Effect.runSyncExit(
+			parseConfig("config.json", raw, ExampleSchema),
+		);
 		expect(Exit.isFailure(exit)).toBe(true);
 		if (Exit.isFailure(exit)) {
 			expect(exit.cause._tag).toBe("Fail");
@@ -59,7 +66,9 @@ describe("parseConfig", () => {
 
 	test("fails with ParseError on malformed JSON", () => {
 		const raw = "not valid json";
-		const exit = Effect.runSyncExit(parseConfig(raw, ExampleSchema));
+		const exit = Effect.runSyncExit(
+			parseConfig("config.json", raw, ExampleSchema),
+		);
 		expect(Exit.isFailure(exit)).toBe(true);
 	});
 });
@@ -91,11 +100,17 @@ describe("readConfig", () => {
 		),
 	});
 
-	test("returns empty config when no files exist", () => {
-		const config = Effect.runSync(
+	test("fails with FileNotFoundError when no config files exist", () => {
+		const exit = Effect.runSyncExit(
 			readConfig("command-hooks.json", HookSchema, "/nonexistent/path"),
 		);
-		expect(config.hooks).toBeUndefined();
+		expect(Exit.isFailure(exit)).toBe(true);
+		if (Exit.isFailure(exit)) {
+			expect(Cause.isFailType(exit.cause)).toBe(true);
+			if (Cause.isFailType(exit.cause)) {
+				expect(exit.cause.error).toBeInstanceOf(FileNotFoundError);
+			}
+		}
 	});
 
 	test("returns validated config when file exists", () => {

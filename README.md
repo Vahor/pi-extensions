@@ -9,7 +9,7 @@ Pi extensions monorepo for [pi](https://pi.dev)
 | Package | Description |
 |---------|-------------|
 | [@vahor/pi-hooks](./packages/pi-hooks) | Run shell commands on pi lifecycle events |
-| [@vahor/pi-hotkeys](./packages/pi-hotkeys) | Custom keyboard shortcuts with command execution |
+| [@vahor/pi-keymap](./packages/pi-keymap) | Custom keyboard shortcuts with command execution |
 
 ## License
 

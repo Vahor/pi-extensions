@@ -39,24 +39,6 @@ Always start by making a plan for your changes. Gather requirements, read the is
 - **Pi discovery**: Extensions use `pi.extensions` in `package.json` → `["./dist/index.js"]`
 - **Config pattern**: Global (`~/.pi/agent/<file>`) merged with project (`.pi/<file>`), project overrides
 
-### @vahor/pi-hooks
-
-Pi extension that runs shell commands on lifecycle events.
-- Entry point: `packages/pi-hooks/src/index.ts`
-- Events: 26 pi lifecycle events defined in `src/events.ts`
-- Config: `.pi/hooks.json` (project) or `~/.pi/agent/hooks.json` (global)
-- Config validation: Effect-TS Schema with custom error messages
-- Runner: sequential execution, errors shown as UI notifications with exit code + truncated output
-- Config schema: `{ hooks: { [event]: Array<string | { command, cwd?, timeout?, print? }> } }`
-
-### @vahor/shared
-
-Internal library, not published independently.
-- Entry point: `lib/shared/src/config/index.ts`
-- Exports: `readConfig`, `readSettings`, `parseConfig`, `mergeSettings`, path helpers, error types (`ParseError`, `ValidationError`)
-- Config merge: shallow merge with deep merge for nested objects
-- Built for `bun` runtime (unlike packages which target node)
-
 ## Development Workflow
 
 ### Adding a new pi extension package
@@ -67,12 +49,6 @@ Internal library, not published independently.
    - `src/index.ts` exporting a default function `(pi: ExtensionAPI) => void`
 2. Add `build`, `typecheck`, `test` scripts
 3. Run `bun install` from root
-
-### Adding a new shared library
-
-1. Create `lib/<name>/` with its own `package.json` and build config
-2. Reference as workspace dependency: `"@vahor/shared": "workspace:*"`
-3. Add an export map in `package.json`
 
 ### Guidelines
 

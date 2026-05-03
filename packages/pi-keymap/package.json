@@ -1,5 +1,5 @@
 {
-	"name": "@vahor/pi-hotkeys",
+	"name": "@vahor/pi-keymap",
 	"version": "0.0.1",
 	"type": "module",
 	"main": "./dist/index.js",
@@ -9,8 +9,9 @@
 	"keywords": [
 		"pi-package",
 		"pi-extension",
-		"hotkeys",
+		"keymap",
 		"keybindings",
+		"keymaps",
 		"pi"
 	],
 	"pi": {

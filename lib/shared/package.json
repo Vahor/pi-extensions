@@ -11,6 +11,10 @@
 		"./runner": {
 			"types": "./src/runner/index.ts",
 			"import": "./src/runner/index.ts"
+		},
+		"./trie": {
+			"types": "./src/trie.ts",
+			"import": "./src/trie.ts"
 		}
 	},
 	"scripts": {

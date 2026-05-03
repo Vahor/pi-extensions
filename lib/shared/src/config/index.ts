@@ -1,4 +1,9 @@
-export { type ConfigError, ParseError, ValidationError } from "./errors.js";
+export {
+	type ConfigError,
+	FileNotFoundError,
+	ParseError,
+	ValidationError,
+} from "./errors.js";
 export { mergeSettings } from "./merge.js";
 export { parseConfig } from "./parse.js";
 export {

@@ -1,15 +1,15 @@
-# @vahor/pi-hotkeys
+# @vahor/pi-keymap
 
-Bind custom keyboard shortcuts to shell commands. Configure once in `.pi/hotkeys.json`.
+Bind custom keyboard shortcuts to shell commands. Configure once in `.pi/keymap.json`.
 
 ```bash
-pi install npm:@vahor/pi-hotkeys
+pi install npm:@vahor/pi-keymap
 ```
 
 ```jsonc
-// .pi/hotkeys.json
+// .pi/keymap.json
 {
-  "hotkeys": [
+  "keymaps": [
     {
       "key": "ctrl+shift+e",
       "commands": ["bun run test"]

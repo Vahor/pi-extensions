@@ -1,0 +1,10 @@
+{
+	"leader": " ",
+	"hotkeys": [
+		{
+			"key": "<leader>h",
+			"commands": ["echo 'hello'"],
+			"description": "Hello World"
+		}
+	]
+}

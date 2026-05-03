@@ -1,29 +1,47 @@
 import { readFileSync } from "node:fs";
-import { Effect, type Schema } from "effect";
-import type { ConfigError } from "./errors.js";
+import { Effect, Option, type Schema } from "effect";
+import { type ConfigError, FileNotFoundError } from "./errors.js";
 import { mergeSettings } from "./merge.js";
 import { parseConfig } from "./parse.js";
 import { getGlobalConfigPath, getProjectConfigPath } from "./paths.js";
 
-const readSettingsFile = (path: string): Record<string, unknown> => {
+const tryReadJSON = (path: string): Option.Option<Record<string, unknown>> => {
 	try {
 		const raw = readFileSync(path, "utf-8");
-		return JSON.parse(raw);
-	} catch {
-		return {};
+		return Option.some(JSON.parse(raw) as Record<string, unknown>);
+	} catch (err) {
+		if (
+			typeof err === "object" &&
+			err !== null &&
+			"code" in err &&
+			err.code === "ENOENT"
+		) {
+			return Option.none();
+		}
+		throw err;
 	}
 };
+
+const readSettingsFile = (
+	path: string,
+): Effect.Effect<Option.Option<Record<string, unknown>>> =>
+	Effect.sync(() => tryReadJSON(path));
 
 const readConfigFiles = (
 	cwd: string,
 	filename: string,
 ): Effect.Effect<Record<string, unknown>> =>
-	Effect.sync(() =>
-		mergeSettings(
-			readSettingsFile(getGlobalConfigPath(filename)),
-			readSettingsFile(getProjectConfigPath(cwd, filename)),
-		),
-	);
+	Effect.gen(function* () {
+		const globalConfig = yield* readSettingsFile(getGlobalConfigPath(filename));
+		const projectConfig = yield* readSettingsFile(
+			getProjectConfigPath(cwd, filename),
+		);
+
+		return mergeSettings(
+			Option.getOrElse(globalConfig, () => ({})),
+			Option.getOrElse(projectConfig, () => ({})),
+		);
+	});
 
 export const readSettings = (
 	cwd: string = process.cwd(),
@@ -35,6 +53,27 @@ export const readConfig = <A, I>(
 	schema: Schema.Schema<A, I>,
 	cwd: string = process.cwd(),
 ): Effect.Effect<A, ConfigError> =>
-	readConfigFiles(cwd, filename).pipe(
-		Effect.flatMap((merged) => parseConfig(JSON.stringify(merged), schema)),
-	);
+	Effect.gen(function* () {
+		const globalPath = getGlobalConfigPath(filename);
+		const projectPath = getProjectConfigPath(cwd, filename);
+
+		const globalConfig = yield* readSettingsFile(globalPath);
+		const projectConfig = yield* readSettingsFile(projectPath);
+
+		if (Option.isNone(globalConfig) && Option.isNone(projectConfig)) {
+			return yield* Effect.fail(new FileNotFoundError(projectPath));
+		}
+
+		const merged = mergeSettings(
+			Option.getOrElse(globalConfig, () => ({})),
+			Option.getOrElse(projectConfig, () => ({})),
+		);
+
+		const config = yield* parseConfig(
+			projectPath,
+			JSON.stringify(merged),
+			schema,
+		);
+
+		return config;
+	});

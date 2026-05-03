@@ -26,3 +26,38 @@ Each entry can be a string (just the command) or an object:
 | `print` | `boolean` | No | `false` | Log stdout as info notification on success |
 
 Errors show as UI notifications with exit code and truncated output.
+
+## Available hooks
+
+These correspond to [pi lifecycle events](https://pi.dev/docs/latest/extensions#events).
+
+| Hook | Description |
+|------|-------------|
+| `session_start` | Session initialized and ready |
+| `session_before_switch` | Before switching to a different session |
+| `session_before_fork` | Before forking the session |
+| `session_before_compact` | Before compacting session context |
+| `session_compact` | Session context compacted |
+| `session_before_tree` | Before generating the session tree |
+| `session_tree` | Session tree generated |
+| `session_shutdown` | Session is shutting down |
+| `before_agent_start` | Before the agent starts processing |
+| `agent_start` | Agent has started |
+| `agent_end` | Agent has finished |
+| `turn_start` | A new turn begins |
+| `turn_end` | The current turn ends |
+| `message_start` | A message (user or assistant) begins |
+| `message_update` | A message is updated in place |
+| `message_end` | A message is complete |
+| `tool_execution_start` | A tool execution begins |
+| `tool_execution_update` | Tool execution output is updated |
+| `tool_execution_end` | Tool execution finishes |
+| `context` | Context is provided to the model |
+| `before_provider_request` | Before sending a request to the model provider |
+| `after_provider_response` | After receiving a response from the model provider |
+| `model_select` | A model is selected |
+| `thinking_level_select` | Thinking level is selected |
+| `tool_call` | Assistant requests a tool call |
+| `tool_result` | Tool result is received |
+| `input` | User submits input |
+| `resources_discover` | Resources are discovered |
