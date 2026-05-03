@@ -21,7 +21,7 @@
     },
     "packages/pi-hooks": {
       "name": "@vahor/pi-hooks",
-      "version": "0.0.1",
+      "version": "0.0.2",
       "dependencies": {
         "@vahor/shared": "workspace:*",
         "effect": "^3.21.2",
