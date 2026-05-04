@@ -85,7 +85,7 @@ export const KeymapsConfigSchema = Schema.transform(
   "keymaps": [
     {
       "key": "<leader>t",
-      "commands": ["echo 'Runnin tests'", { "command": "bun run test", "cwd": ".", "timeout": 30000 }]
+      "commands": ["echo 'Running tests'", { "command": "bun run test", "cwd": ".", "timeout": 30000 }]
     }
   ]
 }

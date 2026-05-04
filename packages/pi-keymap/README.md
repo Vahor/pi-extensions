@@ -1,5 +1,7 @@
 # @vahor/pi-keymap
 
+[![npm downloads](https://img.shields.io/npm/dm/%40vahor%2Fpi-keymap)](https://www.npmjs.com/package/@vahor/pi-keymap)
+
 Define Vim-like custom keymaps that bind keyboard shortcuts to shell commands.
 
 ```bash
@@ -53,10 +55,10 @@ If neither file exists, the extension shows a warning on session start and stays
 | `keymaps[].key` | `string` | Yes | Key combination or `<leader>key` |
 | `keymaps[].description` | `string` | No | Label shown in the which-key overlay (falls back to first command) |
 | `keymaps[].commands` | `array` | No | Shell commands to run. Required for direct keymaps. Optional for leader mappings that only group children. |
-| `keymaps[].print` | `boolean` | No | Print command output in ui. Defaults `true` |
+| `keymaps[].print` | `boolean` | No | Print command output in the UI. Defaults `true` |
 | `keymaps[].context` | `boolean` | No | Add command output to the agent context |
 
-`print` and `context` can be overwritten at command level.
+`print` and `context` can be overridden at command level.
 
 ### Key format
 

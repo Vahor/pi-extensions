@@ -1,5 +1,7 @@
 # @vahor/pi-hooks
 
+[![npm downloads](https://img.shields.io/npm/dm/%40vahor%2Fpi-hooks)](https://www.npmjs.com/package/@vahor/pi-hooks)
+
 Run shell commands in response to [pi events](https://pi.dev).
 
 ```bash
@@ -10,8 +12,8 @@ pi install npm:@vahor/pi-hooks
 // .pi/hooks.json
 {
   "hooks": {
-      "agent_end": ["bun format", "bun typecheck"],
-      "session_start": [{ "command": "echo 'session start'", "print": true }]
+    "agent_end": ["bun format", "bun typecheck"],
+    "session_start": [{ "command": "echo 'session start'", "print": true }]
   }
 }
 ```
