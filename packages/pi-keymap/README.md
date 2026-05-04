@@ -31,7 +31,7 @@ If neither file exists, the extension shows a warning on session start and stays
     {
       "key": "<leader>f",
       "description": "Format",
-      "commands": ["bun run format"]
+      "commands": [{ "command": "bun run format", "timeout": 1000, "print": true }]
     },
     {
       "key": "<leader>g",
@@ -53,7 +53,10 @@ If neither file exists, the extension shows a warning on session start and stays
 | `keymaps[].key` | `string` | Yes | Key combination or `<leader>key` |
 | `keymaps[].description` | `string` | No | Label shown in the which-key overlay (falls back to first command) |
 | `keymaps[].commands` | `array` | No | Shell commands to run. Required for direct keymaps. Optional for leader mappings that only group children. |
-| `keymaps[].print` | `boolean` | No | Print command output in ui |
+| `keymaps[].print` | `boolean` | No | Print command output in ui. Defaults `true` |
+| `keymaps[].context` | `boolean` | No | Add command output to the agent context |
+
+`print` and `context` can be overwritten at command level.
 
 ### Key format
 
@@ -81,7 +84,8 @@ Each entry can be a string (just the command) or an object:
 | `command` | `string` | Yes | – | Shell command to run |
 | `cwd` | `string` | No | project root | Working directory (relative) |
 | `timeout` | `number` | No | `30000` | Timeout in milliseconds |
-| `print` | `boolean` | No | `false` | Log stdout as info notification on success |
+| `print` | `boolean` | No | `true` | Log stdout as info notification on success |
+| `context` | `boolean` | No | `false` | Add command output to the agent context |
 
 Errors show as UI notifications with exit code and truncated output.
 

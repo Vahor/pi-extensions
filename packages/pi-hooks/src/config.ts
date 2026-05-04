@@ -6,6 +6,7 @@ const HookEntryStruct = Schema.Struct({
 	cwd: Schema.optional(Schema.String),
 	timeout: Schema.optional(Schema.Number),
 	print: Schema.optional(Schema.Boolean),
+	context: Schema.optional(Schema.Boolean),
 });
 
 export const HookEntrySchema = Schema.transform(

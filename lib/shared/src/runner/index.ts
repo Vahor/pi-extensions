@@ -9,6 +9,7 @@ export interface CommandEntry {
 	cwd?: string;
 	timeout?: number;
 	print?: boolean;
+	context?: boolean;
 }
 
 const spinnerFrames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
@@ -16,6 +17,51 @@ let spinnerId = 0;
 
 function formatCommand(command: string): string {
 	return command.length > 60 ? `${command.slice(0, 57)}...` : command;
+}
+
+function formatContextMessage(
+	command: string,
+	cwd: string,
+	stdout: string,
+	stderr: string,
+	code: number,
+	killed: boolean,
+): string {
+	const sections = [`Ran \`${command}\``, `Working directory: \`${cwd}\``];
+
+	if (stdout) {
+		sections.push(`stdout:\n\`\`\`\n${stdout}\n\`\`\``);
+	}
+	if (stderr) {
+		sections.push(`stderr:\n\`\`\`\n${stderr}\n\`\`\``);
+	}
+	if (!stdout && !stderr) {
+		sections.push("(no output)");
+	}
+	if (killed) {
+		sections.push("Command was killed.");
+	} else if (code !== 0) {
+		sections.push(`Command exited with code ${code}.`);
+	}
+
+	return sections.join("\n\n");
+}
+
+function sendCommandContext(
+	pi: ExtensionAPI,
+	command: string,
+	cwd: string,
+	stdout: string,
+	stderr: string,
+	code: number,
+	killed: boolean,
+): void {
+	pi.sendMessage({
+		customType: "command-context",
+		content: formatContextMessage(command, cwd, stdout, stderr, code, killed),
+		display: true,
+		details: { command, cwd, stdout, stderr, code, killed },
+	});
 }
 
 function startCommandSpinner(
@@ -56,7 +102,8 @@ export async function runCommands(
 		command,
 		cwd: commandCwd,
 		timeout = 30_000,
-		print,
+		print = true,
+		context,
 	} of commands) {
 		const index = ++spinnerId;
 		const notifyLabel = `[${index}] ${label}`;
@@ -73,6 +120,18 @@ export async function runCommands(
 			const output = (
 				result.stderr.toString().trim() || result.stdout.toString().trim()
 			).slice(0, 300);
+			if (context) {
+				sendCommandContext(
+					pi,
+					command,
+					resolvedCwd,
+					result.stdout.trim(),
+					result.stderr.trim(),
+					result.code,
+					result.killed,
+				);
+			}
+
 			if (result.code !== 0) {
 				ctx.ui.notify(
 					`${notifyLabel} "${command}" failed (exit ${result.code})${output ? `:\n  ↳ ${output}` : ""}`,
@@ -86,6 +145,9 @@ export async function runCommands(
 			}
 		} catch (err) {
 			const message = err instanceof Error ? err.message : String(err);
+			if (context) {
+				sendCommandContext(pi, command, resolvedCwd, "", message, 1, false);
+			}
 			ctx.ui.notify(`${notifyLabel} "${command}" error: ${message}`, "error");
 		} finally {
 			stopSpinner();

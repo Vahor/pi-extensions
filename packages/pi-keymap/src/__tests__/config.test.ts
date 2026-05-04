@@ -30,6 +30,7 @@ describe("KeymapsConfigSchema", () => {
 							cwd: ".",
 							timeout: 5000,
 							print: true,
+							context: true,
 						},
 					],
 				},
@@ -40,6 +41,7 @@ describe("KeymapsConfigSchema", () => {
 			cwd: ".",
 			timeout: 5000,
 			print: true,
+			context: true,
 		});
 	});
 

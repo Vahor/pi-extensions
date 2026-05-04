@@ -2,10 +2,10 @@ import { Schema } from "effect";
 
 const KeymapCommandStruct = Schema.Struct({
 	command: Schema.String,
-	shortcut: Schema.optional(Schema.String),
 	cwd: Schema.optional(Schema.String),
 	timeout: Schema.optional(Schema.Number),
 	print: Schema.optional(Schema.Boolean),
+	context: Schema.optional(Schema.Boolean),
 });
 
 export const KeymapCommandSchema = Schema.transform(
@@ -23,6 +23,7 @@ const RawKeymapEntry = Schema.Struct({
 	description: Schema.optional(Schema.String),
 	commands: Schema.optional(Schema.NonEmptyArray(KeymapCommandSchema)),
 	print: Schema.optional(Schema.Boolean),
+	context: Schema.optional(Schema.Boolean),
 });
 
 /** Decoded keymap entry with leader flag resolved */
@@ -57,6 +58,7 @@ export const KeymapsConfigSchema = Schema.transform(
 					commands: km.commands?.map((command) => ({
 						...command,
 						print: command.print ?? km.print,
+						context: command.context ?? km.context,
 					})),
 					print: km.print,
 					leader: isLeader,

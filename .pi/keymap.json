@@ -17,6 +17,13 @@
 			"description": "Git"
 		},
 		{
+			"key": "<leader>gs",
+			"commands": ["git status"],
+			"description": "Status",
+			"print": true,
+			"context": true
+		},
+		{
 			"key": "<leader>gg",
 			"commands": ["lazygit"],
 			"description": "Open LazyGit"

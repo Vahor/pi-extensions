@@ -34,7 +34,8 @@ Each entry can be a string (just the command) or an object:
 | `command` | `string` | Yes | – | Shell command to run |
 | `cwd` | `string` | No | project root | Working directory (relative) |
 | `timeout` | `number` | No | `30000` | Timeout in milliseconds |
-| `print` | `boolean` | No | `false` | Log stdout as info notification on success |
+| `print` | `boolean` | No | `true` | Log stdout as info notification on success |
+| `context` | `boolean` | No | `false` | Add command output to the agent context |
 
 Errors show as UI notifications with exit code and truncated output.
 
