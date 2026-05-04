@@ -6,11 +6,11 @@
       "name": "@vahor/pi-extensions",
       "devDependencies": {
         "@biomejs/biome": "^2.4.14",
-        "@changesets/changelog-github": "^0.5.1",
-        "@changesets/cli": "^2.29.2",
+        "@changesets/changelog-github": "^0.5.2",
+        "@changesets/cli": "^2.31.0",
         "@types/bun": "^1.3.13",
-        "@types/node": "^22.0.0",
-        "typescript": "^6.0.3",
+        "@types/node": "^22.19.17",
+        "typescript": "^6",
       },
     },
     "lib/shared": {
