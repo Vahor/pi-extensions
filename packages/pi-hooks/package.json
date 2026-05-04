@@ -1,6 +1,6 @@
 {
 	"name": "@vahor/pi-hooks",
-	"version": "0.0.3",
+	"version": "0.0.4",
 	"description": "Run shell commands on pi lifecycle events.",
 	"license": "MIT",
 	"author": {

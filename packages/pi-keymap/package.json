@@ -1,6 +1,6 @@
 {
 	"name": "@vahor/pi-keymap",
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"description": "Vim-like custom keymaps for binding keyboard shortcuts to shell commands in pi.",
 	"license": "MIT",
 	"author": {
