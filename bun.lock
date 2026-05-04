@@ -24,11 +24,11 @@
       "name": "@vahor/pi-hooks",
       "version": "0.0.3",
       "dependencies": {
-        "@vahor/shared": "workspace:*",
         "effect": "^3.21.2",
       },
       "devDependencies": {
         "@types/bun": "^1.3.13",
+        "@vahor/shared": "workspace:*",
       },
       "peerDependencies": {
         "@mariozechner/pi-coding-agent": "*",
@@ -38,11 +38,11 @@
       "name": "@vahor/pi-keymap",
       "version": "0.0.2",
       "dependencies": {
-        "@vahor/shared": "workspace:*",
         "effect": "^3.21.2",
       },
       "devDependencies": {
         "@types/bun": "^1.3.13",
+        "@vahor/shared": "workspace:*",
       },
       "peerDependencies": {
         "@mariozechner/pi-coding-agent": "*",

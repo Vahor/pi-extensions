@@ -20,13 +20,12 @@
 		]
 	},
 	"scripts": {
-		"build": "bun build --target=node --outdir=dist --format=esm src/index.ts --minify",
+		"build": "bun build --target=node --packages=bundle --outdir=dist --format=esm src/index.ts --minify",
 		"dev": "bun run build && pi -e ./dist/index.js",
 		"typecheck": "tsc --noEmit",
 		"test": "bun test"
 	},
 	"dependencies": {
-		"@vahor/shared": "workspace:*",
 		"effect": "^3.21.2"
 	},
 	"peerDependencies": {
@@ -34,7 +33,8 @@
 		"@mariozechner/pi-tui": "*"
 	},
 	"devDependencies": {
-		"@types/bun": "^1.3.13"
+		"@types/bun": "^1.3.13",
+		"@vahor/shared": "workspace:*"
 	},
 	"publishConfig": {
 		"access": "public"
