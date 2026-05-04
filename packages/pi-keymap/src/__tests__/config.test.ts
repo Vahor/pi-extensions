@@ -35,7 +35,7 @@ describe("KeymapsConfigSchema", () => {
 				},
 			],
 		});
-		expect(result.keymaps?.[0].commands[0]).toEqual({
+		expect(result.keymaps?.[0].commands?.[0]).toEqual({
 			command: "echo hello",
 			cwd: ".",
 			timeout: 5000,
@@ -55,10 +55,10 @@ describe("KeymapsConfigSchema", () => {
 		});
 		expect(result.keymaps).toHaveLength(1);
 		expect(result.keymaps?.[0].commands).toHaveLength(2);
-		expect(result.keymaps?.[0].commands[0]).toEqual({
+		expect(result.keymaps?.[0].commands?.[0]).toEqual({
 			command: "echo 'start'",
 		});
-		expect(result.keymaps?.[0].commands[1].command).toBe("bun test");
+		expect(result.keymaps?.[0].commands?.[1]?.command).toBe("bun test");
 	});
 
 	test("allows empty keymaps array", () => {
@@ -137,13 +137,14 @@ describe("KeymapsConfigSchema", () => {
 		).toThrow();
 	});
 
-	test("fails on missing commands", () => {
-		expect(() =>
-			Schema.decodeUnknownSync(KeymapsConfigSchema)({
-				leader: "space",
-				keymaps: [{ key: "ctrl+x" }],
-			}),
-		).toThrow();
+	test("allows missing commands (prefix-only node)", () => {
+		const result = Schema.decodeUnknownSync(KeymapsConfigSchema)({
+			leader: "space",
+			keymaps: [{ key: "<leader>t", description: "Test prefix" }],
+		});
+		expect(result.keymaps).toHaveLength(1);
+		expect(result.keymaps?.[0].commands).toBeUndefined();
+		expect(result.keymaps?.[0].description).toBe("Test prefix");
 	});
 
 	test("fails on empty commands array", () => {

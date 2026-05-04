@@ -21,14 +21,14 @@ export const KeymapCommandSchema = Schema.transform(
 const RawKeymapEntry = Schema.Struct({
 	key: Schema.String,
 	description: Schema.optional(Schema.String),
-	commands: Schema.NonEmptyArray(KeymapCommandSchema),
+	commands: Schema.optional(Schema.NonEmptyArray(KeymapCommandSchema)),
 });
 
 /** Decoded keymap entry with leader flag resolved */
 export const KeymapEntrySchema = Schema.Struct({
 	leaderKey: Schema.String,
 	description: Schema.optional(Schema.String),
-	commands: Schema.NonEmptyArray(KeymapCommandSchema),
+	commands: Schema.optional(Schema.NonEmptyArray(KeymapCommandSchema)),
 	leader: Schema.Boolean,
 });
 

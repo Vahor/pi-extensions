@@ -1,8 +1,18 @@
 {
-	"leader": " ",
-	"hotkeys": [
+	"leader": "space",
+	"keymaps": [
 		{
 			"key": "<leader>h",
+			"commands": ["echo 'hello'"],
+			"description": "Hello World",
+			"print": true
+		},
+		{
+			"key": "<leader>j",
+			"description": "Hello World"
+		},
+		{
+			"key": "<leader>ja",
 			"commands": ["echo 'hello'"],
 			"description": "Hello World"
 		}

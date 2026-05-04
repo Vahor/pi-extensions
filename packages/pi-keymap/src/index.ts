@@ -13,10 +13,72 @@ import {
 import { Effect } from "effect";
 import type { KeymapEntry, KeymapsConfig } from "./config.js";
 import { KeymapsConfigSchema } from "./config.js";
+import { isValidKey } from "./keys.js";
 import { type LeaderEntry, WhichKeyOverlay } from "./which-key.js";
 
 function loadConfig(cwd: string): KeymapsConfig {
 	return Effect.runSync(readConfig("keymap.json", KeymapsConfigSchema, cwd));
+}
+
+interface ValidatedKeymaps {
+	direct: KeymapEntry[];
+	leader: KeymapEntry[];
+}
+
+function validateKeymaps(
+	entries: readonly KeymapEntry[],
+	ctx: ExtensionContext,
+): ValidatedKeymaps {
+	const direct: KeymapEntry[] = [];
+	const leader: KeymapEntry[] = [];
+
+	for (const km of entries) {
+		if (!km.leader) {
+			if (!isValidKey(km.leaderKey)) {
+				ctx.ui.notify(`keymap: key "${km.leaderKey}" is invalid`, "warning");
+				continue;
+			}
+			if (!km.commands) {
+				ctx.ui.notify(
+					`keymap: "${km.leaderKey}" has no commands (direct keymaps must have commands)`,
+					"warning",
+				);
+				continue;
+			}
+			direct.push(km);
+		} else {
+			let invalid = false;
+			for (const ch of km.leaderKey) {
+				if (!isValidKey(ch)) {
+					ctx.ui.notify(
+						`keymap: leader sub-key "${ch}" in "<leader>${km.leaderKey}" is invalid`,
+						"warning",
+					);
+					invalid = true;
+				}
+			}
+			if (!invalid) leader.push(km);
+		}
+	}
+
+	return { direct, leader };
+}
+
+function warnDeadEnds(
+	node: TrieNode<KeymapEntry>,
+	path: string,
+	ctx: ExtensionContext,
+): void {
+	for (const child of node.children.values()) {
+		const childPath = `${path}${child.segment}`;
+		if (!child.payload?.commands?.length && child.children.size === 0) {
+			ctx.ui.notify(
+				`keymap: "${childPath}" has no commands and no children`,
+				"warning",
+			);
+		}
+		warnDeadEnds(child, childPath, ctx);
+	}
 }
 
 export default function (pi: ExtensionAPI) {
@@ -24,17 +86,25 @@ export default function (pi: ExtensionAPI) {
 		const cwd = process.cwd();
 		const config = loadConfig(cwd);
 
-		const directKeymaps = config.keymaps.filter((k) => !k.leader);
-		const leaderEntries = config.keymaps.filter((k) => k.leader);
+		if (!isValidKey(config.leader)) {
+			ctx.ui.notify(
+				`keymap: leader key "${config.leader}" is invalid`,
+				"warning",
+			);
+		}
+
+		const { direct, leader } = validateKeymaps(config.keymaps, ctx);
 
 		const { root, conflicts } = buildTrie<KeymapEntry>(
-			leaderEntries.map((k) => ({ key: k.leaderKey, payload: k })),
+			leader.map((k) => ({ key: k.leaderKey, payload: k })),
 		);
 
-		for (const km of directKeymaps) {
+		warnDeadEnds(root, "<leader>", ctx);
+
+		for (const km of direct) {
 			pi.registerShortcut(km.leaderKey as KeyId, {
-				description: km.description ?? km.commands[0]?.command,
-				handler: () => runCommands(km.commands, cwd, pi, ctx, "keymap"),
+				description: km.description ?? km.commands?.[0]?.command,
+				handler: () => runCommands(km.commands ?? [], cwd, pi, ctx, "keymap"),
 			});
 		}
 
@@ -74,61 +144,70 @@ function showLevel(
 ): void {
 	const entries: LeaderEntry[] = flattenTrieChildren(node).map((c) => ({
 		key: c.key,
-		label:
-			c.payload?.description ?? c.payload?.commands[0]?.command ?? "",
-		commands: c.payload ? [...c.payload.commands] : [],
+		label: c.payload?.description ?? c.payload?.commands?.[0]?.command ?? "",
+		commands: c.payload?.commands ?? [],
 	}));
 
 	const displayPrefix = prefixPath
 		? `<${leaderKey}>${prefixPath}`
 		: `<${leaderKey}>`;
 
-	void ctx.ui.custom<void>((_tui, theme, _kb, done) => {
-		const overlay = new WhichKeyOverlay(
-			theme,
-			entries,
-			(child) => {
-				const childNode = node.children.get(child.key);
-				if (!childNode) {
+	void ctx.ui.custom<void>(
+		(_tui, theme, _kb, done) => {
+			const overlay = new WhichKeyOverlay(
+				theme,
+				entries,
+				(child) => {
+					const childNode = node.children.get(child.key);
+					if (!childNode) {
+						done();
+						onDone();
+						return;
+					}
+
+					if (childNode.children.size > 0) {
+						done();
+						showLevel(
+							ctx,
+							childNode,
+							`${prefixPath}${child.key}`,
+							leaderKey,
+							pi,
+							cwd,
+							onDone,
+						);
+					} else if (childNode.payload?.commands?.length) {
+						done();
+						onDone();
+						runCommands(
+							childNode.payload.commands,
+							cwd,
+							pi,
+							ctx,
+							`keymap <leader>${prefixPath}${child.key}`,
+						);
+					}
+				},
+				() => {
 					done();
 					onDone();
-					return;
-				}
+				},
+				displayPrefix,
+			);
 
-				if (childNode.children.size > 0) {
-					done();
-					showLevel(
-						ctx,
-						childNode,
-						`${prefixPath}${child.key}`,
-						leaderKey,
-						pi,
-						cwd,
-						onDone,
-					);
-				} else if (childNode.payload) {
-					done();
-					onDone();
-					void runCommands(
-						childNode.payload.commands,
-						cwd,
-						pi,
-						ctx,
-						`keymap <leader>${prefixPath}${child.key}`,
-					);
-				}
+			return {
+				render: (w: number) => overlay.render(w),
+				handleInput: (data: string) => overlay.handleInput(data),
+				invalidate: () => overlay.invalidate(),
+			};
+		},
+		{
+			overlay: true,
+			overlayOptions: {
+				anchor: "bottom-center",
+				width: "90%",
+				margin: { bottom: 4 },
 			},
-			() => {
-				done();
-				onDone();
-			},
-			displayPrefix,
-		);
-
-		return {
-			render: (w: number) => overlay.render(w),
-			handleInput: (data: string) => overlay.handleInput(data),
-			invalidate: () => overlay.invalidate(),
-		};
-	});
+		},
+	);
 }

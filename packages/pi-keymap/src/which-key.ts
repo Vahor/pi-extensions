@@ -10,7 +10,7 @@ import type { KeymapCommand } from "./config.js";
 export interface LeaderEntry {
 	key: string;
 	label: string;
-	commands: KeymapCommand[];
+	commands: readonly KeymapCommand[];
 }
 
 /**
@@ -27,16 +27,12 @@ export class WhichKeyOverlay {
 		private onClose: () => void,
 		private prefixLabel: string,
 	) {
-		this.startTimer();
-	}
-
-	private startTimer(): void {
-		this.timer = setTimeout(() => this.onClose(), 5000);
+		this.resetTimer();
 	}
 
 	private resetTimer(): void {
 		if (this.timer) clearTimeout(this.timer);
-		this.startTimer();
+		this.timer = setTimeout(() => this.onClose(), 5000);
 	}
 
 	handleInput(data: string): void {
@@ -56,10 +52,7 @@ export class WhichKeyOverlay {
 	}
 
 	private done(): void {
-		if (this.timer) {
-			clearTimeout(this.timer);
-			this.timer = null;
-		}
+		if (this.timer) clearTimeout(this.timer);
 		this.onClose();
 	}
 
@@ -81,7 +74,9 @@ export class WhichKeyOverlay {
 				th.fg("border", "╮"),
 		);
 
-		const colWidth = Math.floor(innerW / 2);
+		const gap = 2;
+		const leftColWidth = Math.floor((innerW - gap) / 2);
+		const rightColWidth = innerW - gap - leftColWidth;
 		const pairs = Math.ceil(this.entries.length / 2);
 
 		for (let i = 0; i < pairs; i++) {
@@ -91,22 +86,26 @@ export class WhichKeyOverlay {
 			let line = th.fg("border", "│");
 
 			if (left) {
-				line += this.formatEntry(left, colWidth, th);
+				line += this.formatEntry(left, leftColWidth, th);
 			} else {
-				line += " ".repeat(colWidth);
+				line += " ".repeat(leftColWidth);
 			}
 
+			line += " ".repeat(gap);
+
 			if (right) {
-				line += this.formatEntry(right, colWidth, th);
+				line += this.formatEntry(right, rightColWidth, th);
 			} else {
-				line += " ".repeat(colWidth);
+				line += " ".repeat(rightColWidth);
 			}
+
+			line += "  ";
 
 			line += th.fg("border", "│");
 			lines.push(line);
 		}
 
-		const hint = " esc/⏱5s close | press key ";
+		const hint = " esc to close | press key ";
 		lines.push(
 			th.fg("border", "╰") +
 				th.fg("dim", hint) +
