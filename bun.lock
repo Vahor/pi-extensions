@@ -23,7 +23,7 @@
     },
     "packages/pi-hooks": {
       "name": "@vahor/pi-hooks",
-      "version": "0.0.4",
+      "version": "0.0.5",
       "dependencies": {
         "effect": "^3.21.2",
       },
@@ -37,7 +37,7 @@
     },
     "packages/pi-keymap": {
       "name": "@vahor/pi-keymap",
-      "version": "0.0.3",
+      "version": "0.0.4",
       "dependencies": {
         "effect": "^3.21.2",
       },
