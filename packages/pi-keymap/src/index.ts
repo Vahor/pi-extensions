@@ -11,7 +11,7 @@ import {
 	type TrieNode,
 } from "@vahor/shared/trie";
 import { Effect } from "effect";
-import type { KeymapEntry, KeymapsConfig } from "./config.js";
+import type { KeymapCommand, KeymapEntry, KeymapsConfig } from "./config.js";
 import { KeymapsConfigSchema } from "./config.js";
 import { isValidKey } from "./keys.js";
 import { type LeaderEntry, WhichKeyOverlay } from "./which-key.js";
@@ -31,6 +31,10 @@ interface ValidatedKeymaps {
 	direct: KeymapEntry[];
 	leader: KeymapEntry[];
 }
+
+type LeaderAction =
+	| { type: "prefix"; key: string }
+	| { type: "run"; commands: readonly KeymapCommand[]; label: string };
 
 function validateKeymaps(
 	entries: readonly KeymapEntry[],
@@ -168,62 +172,84 @@ function showLevel(
 		? `<${leaderKey}>${prefixPath}`
 		: `<${leaderKey}>`;
 
-	void ctx.ui.custom<void>(
-		(_tui, theme, _kb, done) => {
-			const overlay = new WhichKeyOverlay(
-				theme,
-				entries,
-				(child) => {
-					const childNode = node.children.get(child.key);
-					if (!childNode) {
-						done();
-						onDone();
-						return;
-					}
+	void ctx.ui
+		.custom<LeaderAction | undefined>(
+			(_tui, theme, _kb, done) => {
+				const overlay = new WhichKeyOverlay(
+					theme,
+					entries,
+					(child) => {
+						const childNode = node.children.get(child.key);
+						if (!childNode) {
+							done(undefined);
+							return;
+						}
 
-					if (childNode.children.size > 0) {
-						done();
-						showLevel(
-							ctx,
-							childNode,
-							`${prefixPath}${child.key}`,
-							leaderKey,
-							pi,
-							cwd,
-							onDone,
-						);
-					} else if (childNode.payload?.commands?.length) {
-						done();
-						onDone();
-						runCommands(
-							childNode.payload.commands,
-							cwd,
-							pi,
-							ctx,
-							`keymap <leader>${prefixPath}${child.key}`,
-						);
-					}
-				},
-				() => {
-					done();
-					onDone();
-				},
-				displayPrefix,
-			);
+						if (childNode.children.size > 0) {
+							done({ type: "prefix", key: child.key });
+						} else if (childNode.payload?.commands?.length) {
+							done({
+								type: "run",
+								commands: childNode.payload.commands,
+								label: `keymap <leader>${prefixPath}${child.key}`,
+							});
+						} else {
+							done(undefined);
+						}
+					},
+					() => done(undefined),
+					displayPrefix,
+				);
 
-			return {
-				render: (w: number) => overlay.render(w),
-				handleInput: (data: string) => overlay.handleInput(data),
-				invalidate: () => overlay.invalidate(),
-			};
-		},
-		{
-			overlay: true,
-			overlayOptions: {
-				anchor: "bottom-center",
-				width: "90%",
-				margin: { bottom: 4 },
+				return {
+					render: (w: number) => overlay.render(w),
+					handleInput: (data: string) => overlay.handleInput(data),
+					invalidate: () => overlay.invalidate(),
+					dispose: () => overlay.dispose(),
+				};
 			},
-		},
-	);
+			{
+				overlay: true,
+				overlayOptions: {
+					anchor: "bottom-center",
+					width: "90%",
+					margin: { bottom: 4 },
+				},
+			},
+		)
+		.then((action) => {
+			if (!action) {
+				onDone();
+				return;
+			}
+
+			if (action.type === "prefix") {
+				const childNode = node.children.get(action.key);
+				if (!childNode) {
+					onDone();
+					return;
+				}
+
+				showLevel(
+					ctx,
+					childNode,
+					`${prefixPath}${action.key}`,
+					leaderKey,
+					pi,
+					cwd,
+					onDone,
+				);
+				return;
+			}
+
+			onDone();
+			setTimeout(() => {
+				void runCommands(action.commands, cwd, pi, ctx, action.label);
+			}, 5);
+		})
+		.catch((error) => {
+			onDone();
+			const message = error instanceof Error ? error.message : String(error);
+			ctx.ui.notify(`keymap overlay error: ${message}`, "error");
+		});
 }

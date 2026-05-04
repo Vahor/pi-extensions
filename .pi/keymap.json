@@ -2,19 +2,24 @@
 	"leader": "space",
 	"keymaps": [
 		{
+			"key": "<leader>t",
+			"commands": ["sleep 1 && exit 1"],
+			"description": "Fail"
+		},
+		{
 			"key": "<leader>h",
-			"commands": ["echo 'hello'"],
+			"commands": ["sleep 1 && echo 'hello'"],
 			"description": "Hello World",
 			"print": true
 		},
 		{
-			"key": "<leader>j",
-			"description": "Hello World"
+			"key": "<leader>g",
+			"description": "Git"
 		},
 		{
-			"key": "<leader>ja",
-			"commands": ["echo 'hello'"],
-			"description": "Hello World"
+			"key": "<leader>gg",
+			"commands": ["lazygit"],
+			"description": "Open LazyGit"
 		}
 	]
 }

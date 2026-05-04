@@ -22,6 +22,7 @@ const RawKeymapEntry = Schema.Struct({
 	key: Schema.String,
 	description: Schema.optional(Schema.String),
 	commands: Schema.optional(Schema.NonEmptyArray(KeymapCommandSchema)),
+	print: Schema.optional(Schema.Boolean),
 });
 
 /** Decoded keymap entry with leader flag resolved */
@@ -29,6 +30,7 @@ export const KeymapEntrySchema = Schema.Struct({
 	leaderKey: Schema.String,
 	description: Schema.optional(Schema.String),
 	commands: Schema.optional(Schema.NonEmptyArray(KeymapCommandSchema)),
+	print: Schema.optional(Schema.Boolean),
 	leader: Schema.Boolean,
 });
 
@@ -52,7 +54,11 @@ export const KeymapsConfigSchema = Schema.transform(
 				return {
 					leaderKey: isLeader ? km.key.slice("<leader>".length) : km.key,
 					description: km.description,
-					commands: km.commands,
+					commands: km.commands?.map((command) => ({
+						...command,
+						print: command.print ?? km.print,
+					})),
+					print: km.print,
 					leader: isLeader,
 				};
 			}),
@@ -63,6 +69,7 @@ export const KeymapsConfigSchema = Schema.transform(
 				key: km.leader ? `<leader>${km.leaderKey}` : km.leaderKey,
 				description: km.description,
 				commands: km.commands,
+				print: km.print,
 			})),
 		}),
 		strict: false,

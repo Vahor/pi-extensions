@@ -31,8 +31,14 @@ export class WhichKeyOverlay {
 	}
 
 	private resetTimer(): void {
-		if (this.timer) clearTimeout(this.timer);
+		this.clearTimer();
 		this.timer = setTimeout(() => this.onClose(), 5000);
+	}
+
+	private clearTimer(): void {
+		if (!this.timer) return;
+		clearTimeout(this.timer);
+		this.timer = null;
 	}
 
 	handleInput(data: string): void {
@@ -45,6 +51,7 @@ export class WhichKeyOverlay {
 
 		for (const entry of this.entries) {
 			if (matchesKey(data, entry.key as KeyId)) {
+				this.clearTimer();
 				this.onSelect(entry);
 				return;
 			}
@@ -52,7 +59,7 @@ export class WhichKeyOverlay {
 	}
 
 	private done(): void {
-		if (this.timer) clearTimeout(this.timer);
+		this.clearTimer();
 		this.onClose();
 	}
 
@@ -128,4 +135,9 @@ export class WhichKeyOverlay {
 	}
 
 	invalidate(): void {}
+
+	dispose(): void {
+		// Clear the auto-close timer if pi removes the overlay outside normal key handling.
+		this.clearTimer();
+	}
 }

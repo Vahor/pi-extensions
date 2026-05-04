@@ -53,6 +53,7 @@ If neither file exists, the extension shows a warning on session start and stays
 | `keymaps[].key` | `string` | Yes | Key combination or `<leader>key` |
 | `keymaps[].description` | `string` | No | Label shown in the which-key overlay (falls back to first command) |
 | `keymaps[].commands` | `array` | No | Shell commands to run. Required for direct keymaps. Optional for leader mappings that only group children. |
+| `keymaps[].print` | `boolean` | No | Print command output in ui |
 
 ### Key format
 
