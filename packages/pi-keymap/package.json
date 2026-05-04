@@ -1,8 +1,23 @@
 {
 	"name": "@vahor/pi-keymap",
 	"version": "0.0.2",
+	"description": "Vim-like custom keymaps for binding keyboard shortcuts to shell commands in pi.",
+	"license": "MIT",
+	"author": {
+		"name": "Vahor",
+		"email": "me@vahor.fr"
+	},
 	"type": "module",
 	"main": "./dist/index.js",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Vahor/pi-extensions.git",
+		"directory": "packages/pi-keymap"
+	},
+	"homepage": "https://github.com/Vahor/pi-extensions/tree/main/packages/pi-keymap#readme",
+	"bugs": {
+		"url": "https://github.com/Vahor/pi-extensions/issues"
+	},
 	"files": [
 		"dist"
 	],

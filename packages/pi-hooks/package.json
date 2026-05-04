@@ -1,8 +1,23 @@
 {
 	"name": "@vahor/pi-hooks",
 	"version": "0.0.3",
+	"description": "Run shell commands on pi lifecycle events.",
+	"license": "MIT",
+	"author": {
+		"name": "Vahor",
+		"email": "me@vahor.fr"
+	},
 	"type": "module",
 	"main": "./dist/index.js",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Vahor/pi-extensions.git",
+		"directory": "packages/pi-hooks"
+	},
+	"homepage": "https://github.com/Vahor/pi-extensions/tree/main/packages/pi-hooks#readme",
+	"bugs": {
+		"url": "https://github.com/Vahor/pi-extensions/issues"
+	},
 	"files": [
 		"dist"
 	],

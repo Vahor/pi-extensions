@@ -1,6 +1,21 @@
 {
 	"name": "@vahor/pi-extensions",
+	"description": "Pi extensions monorepo for pi.",
 	"private": true,
+	"license": "MIT",
+	"author": {
+		"name": "Vahor",
+		"email": "me@vahor.fr"
+	},
+	"packageManager": "bun@1.3.13",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Vahor/pi-extensions.git"
+	},
+	"homepage": "https://github.com/Vahor/pi-extensions#readme",
+	"bugs": {
+		"url": "https://github.com/Vahor/pi-extensions/issues"
+	},
 	"workspaces": [
 		"packages/*",
 		"lib/*"

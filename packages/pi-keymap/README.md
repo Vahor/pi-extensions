@@ -1,6 +1,6 @@
 # @vahor/pi-keymap
 
-Bind custom keyboard shortcuts to shell commands.
+Define Vim-like custom keymaps that bind keyboard shortcuts to shell commands.
 
 ```bash
 pi install npm:@vahor/pi-keymap

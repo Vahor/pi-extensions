@@ -1,7 +1,13 @@
 {
 	"name": "@vahor/shared",
 	"version": "0.0.1",
+	"description": "Shared utilities for Vahor pi extensions.",
 	"private": true,
+	"license": "MIT",
+	"author": {
+		"name": "Vahor",
+		"email": "me@vahor.fr"
+	},
 	"type": "module",
 	"exports": {
 		"./config": {
