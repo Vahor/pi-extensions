@@ -33,7 +33,7 @@
 		]
 	},
 	"scripts": {
-		"build": "bun build --target=node --packages=bundle --outdir=dist --format=esm src/index.ts --minify",
+		"build": "tsdown",
 		"dev": "bun run build && pi -e ./dist/index.js",
 		"typecheck": "tsc --noEmit",
 		"test": "bun test"
