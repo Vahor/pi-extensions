@@ -1,5 +1,17 @@
 # @vahor/pi-keymap
 
+## 0.0.4
+
+### Patch Changes
+
+- [`47037e5`](https://github.com/Vahor/pi-extensions/commit/47037e5fbbd4bdb5c122ff04660fb8c00653de74) Thanks [@Vahor](https://github.com/Vahor)! - Add a command-level `context` option to inject command output into the agent context.
+
+- [`47037e5`](https://github.com/Vahor/pi-extensions/commit/47037e5fbbd4bdb5c122ff04660fb8c00653de74) Thanks [@Vahor](https://github.com/Vahor)! - Default command `print` to true so successful command output is shown unless disabled.
+
+- [`14430ae`](https://github.com/Vahor/pi-extensions/commit/14430ae5cfe6ba489d27fb8b89160c3ce8c96e99) Thanks [@Vahor](https://github.com/Vahor)! - Preserve keymap-level print defaults when running commands.
+
+- [`14430ae`](https://github.com/Vahor/pi-extensions/commit/14430ae5cfe6ba489d27fb8b89160c3ce8c96e99) Thanks [@Vahor](https://github.com/Vahor)! - Prefix runner status and notifications with a unique command index.
+
 ## 0.0.3
 
 ### Patch Changes
