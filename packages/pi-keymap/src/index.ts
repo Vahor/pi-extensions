@@ -3,7 +3,7 @@ import type {
 	ExtensionContext,
 } from "@mariozechner/pi-coding-agent";
 import { type KeyId, matchesKey } from "@mariozechner/pi-tui";
-import { readConfig } from "@vahor/shared/config";
+import { FileNotFoundError, readConfig } from "@vahor/shared/config";
 import { runCommands } from "@vahor/shared/runner";
 import {
 	buildTrie,
@@ -16,8 +16,15 @@ import { KeymapsConfigSchema } from "./config.js";
 import { isValidKey } from "./keys.js";
 import { type LeaderEntry, WhichKeyOverlay } from "./which-key.js";
 
-function loadConfig(cwd: string): KeymapsConfig {
-	return Effect.runSync(readConfig("keymap.json", KeymapsConfigSchema, cwd));
+function loadConfig(cwd: string): KeymapsConfig | undefined {
+	return Effect.runSync(
+		readConfig("keymap.json", KeymapsConfigSchema, cwd).pipe(
+			Effect.catchIf(
+				(error) => error instanceof FileNotFoundError,
+				() => Effect.succeed(undefined),
+			),
+		),
+	);
 }
 
 interface ValidatedKeymaps {
@@ -85,6 +92,13 @@ export default function (pi: ExtensionAPI) {
 	pi.on("session_start", (_event, ctx) => {
 		const cwd = process.cwd();
 		const config = loadConfig(cwd);
+		if (!config) {
+			ctx.ui.notify(
+				"keymap: config not found (.pi/keymap.json); extension disabled",
+				"warning",
+			);
+			return;
+		}
 
 		if (!isValidKey(config.leader)) {
 			ctx.ui.notify(
@@ -117,14 +131,16 @@ export default function (pi: ExtensionAPI) {
 		let leaderPressed = false;
 
 		const unsubscribe = ctx.ui.onTerminalInput((data: string) => {
-			if (!leaderPressed && matchesKey(data, config.leader as KeyId)) {
-				leaderPressed = true;
-				showLevel(ctx, root, "", config.leader, pi, cwd, () => {
-					leaderPressed = false;
-				});
-				return { consume: true };
-			}
-			return;
+			if (leaderPressed) return;
+			if (!matchesKey(data, config.leader as KeyId)) return;
+			// Only trigger when editor is empty (not while typing)
+			if (ctx.hasUI && ctx.ui.getEditorText().trim() !== "") return;
+
+			leaderPressed = true;
+			showLevel(ctx, root, "", config.leader, pi, cwd, () => {
+				leaderPressed = false;
+			});
+			return { consume: true };
 		});
 
 		pi.on("session_shutdown", () => {

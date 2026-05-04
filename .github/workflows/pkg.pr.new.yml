@@ -16,4 +16,4 @@ jobs:
       - name: Build packages
         run: bun run build
       - name: Publish packages
-        run: bunx pkg-pr-new publish --packageManager=bun './packages/command-hooks'
+        run: bunx pkg-pr-new publish --packageManager=bun './packages/pi-hooks' './packages/pi-keymap'

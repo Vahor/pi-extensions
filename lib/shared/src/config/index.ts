@@ -5,7 +5,7 @@ export {
 	ValidationError,
 } from "./errors.js";
 export { mergeSettings } from "./merge.js";
-export { parseConfig } from "./parse.js";
+export { decodeConfig, parseConfig, parseJson } from "./parse.js";
 export {
 	getGlobalConfigPath,
 	getProjectConfigPath,

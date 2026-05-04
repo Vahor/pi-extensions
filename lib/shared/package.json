@@ -21,7 +21,7 @@
 		"build": "bun run build:config && bun run build:runner",
 		"build:config": "bun build --target=bun --outdir=dist/config src/config/index.ts --format=esm",
 		"build:runner": "bun build --target=bun --outdir=dist/runner src/runner/index.ts --format=esm",
-		"typecheck": "bunx tsc --noEmit",
+		"typecheck": "tsc --noEmit",
 		"test": "bun test"
 	},
 	"dependencies": {

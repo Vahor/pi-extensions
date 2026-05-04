@@ -1,18 +1,34 @@
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
-import { readConfig } from "@vahor/shared/config";
+import { FileNotFoundError, readConfig } from "@vahor/shared/config";
 import { runCommands } from "@vahor/shared/runner";
 import { Effect } from "effect";
+import type { CommandHooksConfig } from "./config.js";
 import { CommandHooksConfigSchema, PiEvent } from "./config.js";
 
-function loadConfig(cwd: string) {
+function loadConfig(cwd: string): CommandHooksConfig | undefined {
 	return Effect.runSync(
-		readConfig("hooks.json", CommandHooksConfigSchema, cwd),
+		readConfig("hooks.json", CommandHooksConfigSchema, cwd).pipe(
+			Effect.catchIf(
+				(error) => error instanceof FileNotFoundError,
+				() => Effect.succeed(undefined),
+			),
+		),
 	);
 }
 
 export default function (pi: ExtensionAPI) {
 	const cwd = process.cwd();
 	const config = loadConfig(cwd);
+
+	if (!config) {
+		pi.on("session_start", (_event, ctx) => {
+			ctx.ui.notify(
+				"hooks: config not found (.pi/hooks.json); extension disabled",
+				"warning",
+			);
+		});
+		return;
+	}
 
 	if (!config.hooks || Object.keys(config.hooks).length === 0) {
 		return;

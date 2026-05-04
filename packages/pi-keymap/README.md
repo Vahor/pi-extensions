@@ -1,12 +1,21 @@
 # @vahor/pi-keymap
 
-Bind custom keyboard shortcuts to shell commands. Configure once in `.pi/keymap.json`.
+Bind custom keyboard shortcuts to shell commands.
 
 ```bash
 pi install npm:@vahor/pi-keymap
 ```
 
 ## Config
+
+Configuration is loaded from both locations and merged recursively:
+
+| Location | Scope |
+|----------|-------|
+| `~/.pi/agent/keymap.json` | Global keymaps |
+| `.pi/keymap.json` | Project keymaps; overrides global values |
+
+If neither file exists, the extension shows a warning on session start and stays disabled.
 
 ```jsonc
 // .pi/keymap.json
@@ -77,6 +86,6 @@ Errors show as UI notifications with exit code and truncated output.
 
 ## Leader key & which-key overlay
 
-Press the configured `leader` key to open a full-width bottom overlay listing all leader-prefixed keymaps. Then press the sub-key to trigger the mapping, or `escape` to dismiss. The overlay auto-closes after 5 seconds.
+Press the configured `leader` key to open a full-width bottom overlay listing all leader-prefixed keymaps. The overlay only opens when the input editor is empty, so typing a space (if your leader is `space`) won't accidentally trigger it. Press the sub-key to run the mapping, or `escape` to dismiss. The overlay auto-closes after 5 seconds.
 
 Leader keys can be nested: `<leader>g` shows a sub-overlay with its children (`gp` → `git push`, `gpf` → `git push --force`). Prefix-only nodes (no `commands`, just a `description`) act as grouping folders.

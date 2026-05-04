@@ -1,6 +1,6 @@
 # @vahor/pi-hooks
 
-Run shell commands in response to [pi events](https://pi.dev). Configure once in `.pi/hooks.json`.
+Run shell commands in response to [pi events](https://pi.dev).
 
 ```bash
 pi install npm:@vahor/pi-hooks
@@ -15,6 +15,17 @@ pi install npm:@vahor/pi-hooks
   }
 }
 ```
+
+## Config locations
+
+Configuration is loaded from both locations and merged recursively:
+
+| Location | Scope |
+|----------|-------|
+| `~/.pi/agent/hooks.json` | Global hooks |
+| `.pi/hooks.json` | Project hooks; overrides global values |
+
+If neither file exists, the extension shows a warning on session start and stays disabled.
 
 Each entry can be a string (just the command) or an object:
 

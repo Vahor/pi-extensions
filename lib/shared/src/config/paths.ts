@@ -1,10 +1,11 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-const homeDir = process.env.HOME ?? process.env.USERPROFILE ?? homedir();
+const getHomeDir = (): string =>
+	process.env.HOME ?? process.env.USERPROFILE ?? homedir();
 
 export const getGlobalConfigPath = (filename: string): string =>
-	join(homeDir, ".pi", "agent", filename);
+	join(getHomeDir(), ".pi", "agent", filename);
 
 export const getProjectConfigPath = (cwd: string, filename: string): string =>
 	join(cwd, ".pi", filename);

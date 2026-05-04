@@ -20,7 +20,7 @@
 	"scripts": {
 		"build": "bun build --target=node --outdir=dist --format=esm src/index.ts --minify",
 		"dev": "bun run build && pi -e ./dist/index.js",
-		"typecheck": "bunx tsc --noEmit",
+		"typecheck": "tsc --noEmit",
 		"test": "bun test"
 	},
 	"dependencies": {

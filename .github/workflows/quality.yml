@@ -28,7 +28,7 @@ jobs:
       - name: Run Biome
         run: biome ci .
 
-  typecheck:
+  validate:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -41,3 +41,7 @@ jobs:
         run: bun install --frozen-lockfile
       - name: Run typecheck
         run: bun run typecheck
+      - name: Run tests
+        run: bun test
+      - name: Build packages
+        run: bun run build
