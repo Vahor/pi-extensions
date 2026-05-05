@@ -17,10 +17,11 @@ export interface CommandEntry {
 const spinnerFrames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 let spinnerId = 0;
 
-interface InteractiveCommandResult {
+interface CommandResult {
+	stdout: string;
+	stderr: string;
 	code: number;
-	killed: boolean;
-	message?: string;
+	notifyOutput?: string;
 }
 
 function formatCommand(command: string): string {
@@ -33,7 +34,6 @@ function formatContextMessage(
 	stdout: string,
 	stderr: string,
 	code: number,
-	killed: boolean,
 ): string {
 	const sections = [`Ran \`${command}\``, `Working directory: \`${cwd}\``];
 
@@ -46,9 +46,7 @@ function formatContextMessage(
 	if (!stdout && !stderr) {
 		sections.push("(no output)");
 	}
-	if (killed) {
-		sections.push("Command was killed.");
-	} else if (code !== 0) {
+	if (code !== 0) {
 		sections.push(`Command exited with code ${code}.`);
 	}
 
@@ -62,13 +60,12 @@ function sendCommandContext(
 	stdout: string,
 	stderr: string,
 	code: number,
-	killed: boolean,
 ): void {
 	pi.sendMessage({
 		customType: "command-context",
-		content: formatContextMessage(command, cwd, stdout, stderr, code, killed),
+		content: formatContextMessage(command, cwd, stdout, stderr, code),
 		display: true,
-		details: { command, cwd, stdout, stderr, code, killed },
+		details: { command, cwd, stdout, stderr, code },
 	});
 }
 
@@ -102,36 +99,36 @@ function startCommandSpinner(
 async function runInteractiveCommand(
 	command: string,
 	cwd: string,
-	timeout: number | undefined,
 	ctx: ExtensionContext,
-): Promise<InteractiveCommandResult> {
+): Promise<CommandResult> {
 	if (!ctx.hasUI || !process.stdin.isTTY || !process.stdout.isTTY) {
+		const message = "interactive commands require pi's interactive TUI";
 		return {
+			stdout: "",
+			stderr: message,
 			code: 1,
-			killed: false,
-			message: "interactive commands require pi's interactive TUI",
+			notifyOutput: message,
 		};
 	}
 
-	return ctx.ui.custom<InteractiveCommandResult>((tui, _theme, _kb, done) => {
+	return ctx.ui.custom<CommandResult>((tui, _theme, _kb, done) => {
 		const shell = process.env.SHELL || "/bin/sh";
 		let completed = false;
-		let killed = false;
-		let forceKillTimer: ReturnType<typeof setTimeout> | undefined;
-		let timeoutTimer: ReturnType<typeof setTimeout> | undefined;
 
-		const finish = (result: InteractiveCommandResult): void => {
+		const finish = (result: Omit<CommandResult, "stdout" | "stderr">): void => {
 			if (completed) return;
 			completed = true;
-			if (timeoutTimer) clearTimeout(timeoutTimer);
-			if (forceKillTimer) clearTimeout(forceKillTimer);
 			tui.start();
 			tui.requestRender(true);
-			done(result);
+			done({
+				stdout: "",
+				stderr:
+					result.notifyOutput || "interactive command output is not captured",
+				...result,
+			});
 		};
 
 		tui.stop();
-		process.stdout.write("\x1b[2J\x1b[H");
 
 		const child = spawn(shell, ["-c", command], {
 			cwd,
@@ -139,32 +136,63 @@ async function runInteractiveCommand(
 			env: process.env,
 		});
 
-		const killChild = (): void => {
-			if (killed) return;
-			killed = true;
-			child.kill("SIGTERM");
-			forceKillTimer = setTimeout(() => {
-				if (!child.killed) child.kill("SIGKILL");
-			}, 5000);
-		};
-
-		if (timeout && timeout > 0) {
-			timeoutTimer = setTimeout(killChild, timeout);
-		}
-
 		child.on("error", (error) => {
-			finish({ code: 1, killed, message: error.message });
+			finish({ code: 1, notifyOutput: error.message });
 		});
 		child.on("exit", (code, signal) => {
+			const message = signal ? `terminated by ${signal}` : undefined;
 			finish({
 				code: code ?? (signal ? 1 : 0),
-				killed,
-				message: signal ? `terminated by ${signal}` : undefined,
+				notifyOutput: message ?? "",
 			});
 		});
 
 		return { render: () => [], invalidate: () => {} };
 	});
+}
+
+function handleCommandResult(
+	pi: ExtensionAPI,
+	ctx: ExtensionContext,
+	options: {
+		command: string;
+		cwd: string;
+		notifyLabel: string;
+		print: boolean;
+		context: boolean | undefined;
+		successVerb: string;
+		result: CommandResult;
+	},
+): void {
+	const { command, cwd, notifyLabel, print, context, successVerb, result } =
+		options;
+	const output = (
+		result.notifyOutput ??
+		(result.stderr.toString().trim() || result.stdout.toString().trim())
+	).slice(0, 400);
+
+	if (context) {
+		sendCommandContext(
+			pi,
+			command,
+			cwd,
+			result.stdout.trim(),
+			result.stderr.trim(),
+			result.code,
+		);
+	}
+
+	if (result.code !== 0) {
+		ctx.ui.notify(
+			`${notifyLabel} "${command}" failed (exit ${result.code})${output ? `:\n  ↳ ${output}` : ""}`,
+			"error",
+		);
+	} else if (print) {
+		ctx.ui.notify(
+			`${notifyLabel} "${command}" ${successVerb}${output ? `:\n  ↳ ${output}` : ""}`,
+			"info",
+		);
+	}
 }
 
 export async function runCommands(
@@ -185,78 +213,33 @@ export async function runCommands(
 		const index = ++spinnerId;
 		const notifyLabel = `[${index}] ${label}`;
 		const resolvedCwd = commandCwd ? resolve(cwd, commandCwd) : cwd;
+		const shell = process.env.SHELL || "/bin/sh";
 
 		const stopSpinner = interactive
 			? () => {}
 			: startCommandSpinner(ctx, command, index);
 
 		try {
-			if (interactive) {
-				const result = await runInteractiveCommand(
-					command,
-					resolvedCwd,
-					timeout,
-					ctx,
-				);
+			const result = interactive
+				? await runInteractiveCommand(command, resolvedCwd, ctx)
+				: await pi.exec(shell, ["-c", command], {
+						cwd: resolvedCwd,
+						timeout: timeout ?? 30_000,
+					});
 
-				if (context) {
-					sendCommandContext(
-						pi,
-						command,
-						resolvedCwd,
-						"",
-						result.message ?? "interactive command output is not captured",
-						result.code,
-						result.killed,
-					);
-				}
-
-				if (result.code !== 0) {
-					ctx.ui.notify(
-						`${notifyLabel} "${command}" failed (exit ${result.code})${result.message ? `:\n  ↳ ${result.message}` : ""}`,
-						"error",
-					);
-				} else if (print) {
-					ctx.ui.notify(`${notifyLabel} "${command}" completed`, "info");
-				}
-				continue;
-			}
-
-			const result = await pi.exec("/bin/sh", ["-c", command], {
+			handleCommandResult(pi, ctx, {
+				command,
 				cwd: resolvedCwd,
-				timeout: timeout ?? 30_000,
+				notifyLabel,
+				print,
+				context,
+				successVerb: interactive ? "completed" : "succeeded",
+				result,
 			});
-
-			const output = (
-				result.stderr.toString().trim() || result.stdout.toString().trim()
-			).slice(0, 300);
-			if (context) {
-				sendCommandContext(
-					pi,
-					command,
-					resolvedCwd,
-					result.stdout.trim(),
-					result.stderr.trim(),
-					result.code,
-					result.killed,
-				);
-			}
-
-			if (result.code !== 0) {
-				ctx.ui.notify(
-					`${notifyLabel} "${command}" failed (exit ${result.code})${output ? `:\n  ↳ ${output}` : ""}`,
-					"error",
-				);
-			} else if (print) {
-				ctx.ui.notify(
-					`${notifyLabel} "${command}" succeeded${output ? `:\n  ↳ ${output}` : ""}`,
-					"info",
-				);
-			}
 		} catch (err) {
 			const message = err instanceof Error ? err.message : String(err);
 			if (context) {
-				sendCommandContext(pi, command, resolvedCwd, "", message, 1, false);
+				sendCommandContext(pi, command, resolvedCwd, "", message, 1);
 			}
 			ctx.ui.notify(`${notifyLabel} "${command}" error: ${message}`, "error");
 		} finally {
