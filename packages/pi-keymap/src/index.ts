@@ -98,7 +98,7 @@ function applyPrompt(
 	pi: ExtensionAPI,
 	ctx: ExtensionContext,
 	content: string,
-	send: boolean | undefined,
+	send: boolean,
 ): void {
 	if (send) {
 		pi.sendUserMessage(content);
@@ -126,7 +126,7 @@ async function runPrompt(
 	);
 	if (content === undefined) return;
 
-	applyPrompt(pi, ctx, content, entry.send);
+	applyPrompt(pi, ctx, content, entry.send ?? true);
 }
 
 async function runEntry(
