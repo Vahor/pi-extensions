@@ -173,6 +173,15 @@ describe("KeymapsConfigSchema", () => {
 		expect(result.keymaps?.[0].description).toBe("Test prefix");
 	});
 
+	test("fails when commands and prompt are both present", () => {
+		expect(() =>
+			Schema.decodeUnknownSync(KeymapsConfigSchema)({
+				leader: "space",
+				keymaps: [{ key: "ctrl+x", commands: ["echo"], prompt: "text" }],
+			}),
+		).toThrow();
+	});
+
 	test("fails on empty commands array", () => {
 		expect(() =>
 			Schema.decodeUnknownSync(KeymapsConfigSchema)({

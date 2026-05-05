@@ -5,12 +5,10 @@ import {
 	truncateToWidth,
 	visibleWidth,
 } from "@mariozechner/pi-tui";
-import type { KeymapCommand } from "./config.js";
-
 export interface LeaderEntry {
 	key: string;
 	label: string;
-	commands: readonly KeymapCommand[];
+	hasAction: boolean;
 }
 
 /**
@@ -124,7 +122,7 @@ export class WhichKeyOverlay {
 	}
 
 	private formatEntry(entry: LeaderEntry, colWidth: number, th: Theme): string {
-		const isPrefix = entry.commands.length === 0;
+		const isPrefix = !entry.hasAction;
 		const keyColor = isPrefix
 			? th.fg("warning", entry.key.padEnd(6))
 			: th.fg("accent", entry.key.padEnd(6));
