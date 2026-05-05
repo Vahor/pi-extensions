@@ -7,6 +7,7 @@ const HookEntryStruct = Schema.Struct({
 	timeout: Schema.optional(Schema.Number),
 	print: Schema.optional(Schema.Boolean),
 	context: Schema.optional(Schema.Boolean),
+	interactive: Schema.optional(Schema.Boolean),
 });
 
 export const HookEntrySchema = Schema.transform(
@@ -31,7 +32,7 @@ export const CommandHooksConfigSchema = Schema.Struct({
 		message: `Invalid hooks.json. Expected format:
 {
   "hooks": {
-    "<event>": ["command", { "command": "...", "cwd": ".", "timeout": 30000 }]
+    "<event>": ["command", { "command": "...", "cwd": ".", "timeout": 30000, "interactive": true }]
   }
 }
 Valid events: ${PiEvent.literals.join(", ")}`,

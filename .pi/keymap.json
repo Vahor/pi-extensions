@@ -26,7 +26,8 @@
 		{
 			"key": "<leader>gg",
 			"commands": ["lazygit"],
-			"description": "Open LazyGit"
+			"description": "Open LazyGit",
+			"interactive": true
 		}
 	]
 }

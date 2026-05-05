@@ -31,6 +31,7 @@ describe("KeymapsConfigSchema", () => {
 							timeout: 5000,
 							print: true,
 							context: true,
+							interactive: true,
 						},
 					],
 				},
@@ -42,6 +43,29 @@ describe("KeymapsConfigSchema", () => {
 			timeout: 5000,
 			print: true,
 			context: true,
+			interactive: true,
+		});
+	});
+
+	test("inherits entry-level options for string commands", () => {
+		const result = Schema.decodeUnknownSync(KeymapsConfigSchema)({
+			leader: "space",
+			keymaps: [
+				{
+					key: "<leader>g",
+					commands: ["echo hello"],
+					print: true,
+					context: true,
+					interactive: true,
+				},
+			],
+		});
+
+		expect(result.keymaps?.[0].commands?.[0]).toEqual({
+			command: "echo hello",
+			print: true,
+			context: true,
+			interactive: true,
 		});
 	});
 
