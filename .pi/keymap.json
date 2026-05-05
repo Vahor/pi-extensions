@@ -10,7 +10,13 @@
 			"key": "<leader>h",
 			"commands": ["sleep 1 && echo 'hello'"],
 			"description": "Hello World",
-			"print": true
+			"print": true,
+			"interactive": true
+		},
+		{
+			"key": "<leader>p",
+			"prompt": "Message to send",
+			"send": false
 		},
 		{
 			"key": "<leader>g",

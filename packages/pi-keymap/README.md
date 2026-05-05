@@ -36,6 +36,13 @@ If neither file exists, the extension shows a warning on session start and stays
       "commands": [{ "command": "bun run format", "timeout": 1000, "print": true }]
     },
     {
+      "key": "<leader>p",
+      "description": "Draft prompt in vim",
+      "prompt": "Default prompt content",
+      "send": false,
+      "open": true
+    },
+    {
       "key": "<leader>g",
       "description": "Git",
     },
@@ -54,12 +61,17 @@ If neither file exists, the extension shows a warning on session start and stays
 | `keymaps` | `array` | Yes | List of keymap entries |
 | `keymaps[].key` | `string` | Yes | Key combination or `<leader>key` |
 | `keymaps[].description` | `string` | No | Label shown in the which-key overlay (falls back to first command) |
-| `keymaps[].commands` | `array` | No | Shell commands to run. Required for direct keymaps. Optional for leader mappings that only group children. |
+| `keymaps[].commands` | `array` | No | Shell commands to run. Required for command keymaps. |
+| `keymaps[].prompt` | `string` | No | Default prompt text. Opens in vim by default, then saved content is placed in the input editor or sent. |
+| `keymaps[].send` | `boolean` | No | For prompt keymaps, send saved content immediately instead of placing it in the input editor. Defaults `false` |
+| `keymaps[].open` | `boolean` | No | For prompt keymaps, open vim before using the prompt. Defaults `true`; `false` places the prompt in the input editor without opening vim. |
 | `keymaps[].print` | `boolean` | No | Print command output in the UI. Defaults `true` |
 | `keymaps[].context` | `boolean` | No | Add command output to the agent context |
 | `keymaps[].interactive` | `boolean` | No | Default interactive mode for commands in this keymap |
 
-`print`, `context`, and `interactive` can be overridden at command level. Command-level wins over keymap-level.
+`commands`, `prompt`, and grouping entries are mutually exclusive shapes: use `commands` for shell commands, `prompt` for prompt drafts, or neither for a leader grouping node. `print`, `context`, and `interactive` can be overridden at command level. Command-level wins over keymap-level.
+
+For prompt keymaps, `:q!` in vim cancels without changing the pi input. `:wq` saves; with `send: true` the saved content is sent immediately, otherwise it is inserted into the input editor. For now, prompt keymaps open `vim` directly.
 
 ### Key format
 
