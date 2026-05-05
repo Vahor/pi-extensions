@@ -6,6 +6,7 @@ const KeymapCommandStruct = Schema.Struct({
 	timeout: Schema.optional(Schema.Number),
 	print: Schema.optional(Schema.Boolean),
 	context: Schema.optional(Schema.Boolean),
+	interactive: Schema.optional(Schema.Boolean),
 });
 
 export const KeymapCommandSchema = Schema.transform(
@@ -24,6 +25,7 @@ const RawKeymapEntry = Schema.Struct({
 	commands: Schema.optional(Schema.NonEmptyArray(KeymapCommandSchema)),
 	print: Schema.optional(Schema.Boolean),
 	context: Schema.optional(Schema.Boolean),
+	interactive: Schema.optional(Schema.Boolean),
 });
 
 /** Decoded keymap entry with leader flag resolved */
@@ -32,6 +34,7 @@ export const KeymapEntrySchema = Schema.Struct({
 	description: Schema.optional(Schema.String),
 	commands: Schema.optional(Schema.NonEmptyArray(KeymapCommandSchema)),
 	print: Schema.optional(Schema.Boolean),
+	interactive: Schema.optional(Schema.Boolean),
 	leader: Schema.Boolean,
 });
 
@@ -59,8 +62,10 @@ export const KeymapsConfigSchema = Schema.transform(
 						...command,
 						print: command.print ?? km.print,
 						context: command.context ?? km.context,
+						interactive: command.interactive ?? km.interactive,
 					})),
 					print: km.print,
+					interactive: km.interactive,
 					leader: isLeader,
 				};
 			}),
@@ -72,6 +77,7 @@ export const KeymapsConfigSchema = Schema.transform(
 				description: km.description,
 				commands: km.commands,
 				print: km.print,
+				interactive: km.interactive,
 			})),
 		}),
 		strict: false,
@@ -90,6 +96,7 @@ export const KeymapsConfigSchema = Schema.transform(
   ]
 }
 Keymap keys: modifier+key where modifiers are ctrl, shift, alt (e.g. "ctrl+shift+p", "alt+x"). Can be prefixed with the leader key, e.g. "<leader>t"
+Set "interactive": true for terminal UI commands like lazygit, vim, htop, or fzf.
 Leader: a single character or named key (e.g. "f", "t", "enter")`,
 	}),
 });

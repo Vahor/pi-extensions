@@ -42,7 +42,7 @@ If neither file exists, the extension shows a warning on session start and stays
     // Nested leader keys
     {
       "key": "<leader>gg",
-      "commands": ["lazygit"]
+      "commands": [{ "command": "lazygit", "interactive": true }]
     },
   ]
 }
@@ -57,6 +57,7 @@ If neither file exists, the extension shows a warning on session start and stays
 | `keymaps[].commands` | `array` | No | Shell commands to run. Required for direct keymaps. Optional for leader mappings that only group children. |
 | `keymaps[].print` | `boolean` | No | Print command output in the UI. Defaults `true` |
 | `keymaps[].context` | `boolean` | No | Add command output to the agent context |
+| `keymaps[].interactive` | `boolean` | No | Run terminal UI commands with pi's TUI suspended |
 
 `print` and `context` can be overridden at command level.
 
@@ -85,11 +86,12 @@ Each entry can be a string (just the command) or an object:
 |-------|------|----------|---------|-------------|
 | `command` | `string` | Yes | – | Shell command to run |
 | `cwd` | `string` | No | project root | Working directory (relative) |
-| `timeout` | `number` | No | `30000` | Timeout in milliseconds |
+| `timeout` | `number` | No | `30000` captured, none interactive | Timeout in milliseconds |
 | `print` | `boolean` | No | `true` | Log stdout as info notification on success |
 | `context` | `boolean` | No | `false` | Add command output to the agent context |
+| `interactive` | `boolean` | No | `false` | Suspend pi's TUI and run with full terminal access. Use for commands like `lazygit`, `vim`, `htop`, or `fzf`. Output is not captured. |
 
-Errors show as UI notifications with exit code and truncated output.
+Errors show as UI notifications with exit code and truncated output. Interactive commands restore and fully redraw pi after they exit.
 
 ## Leader key & which-key overlay
 

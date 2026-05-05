@@ -31,6 +31,7 @@ describe("KeymapsConfigSchema", () => {
 							timeout: 5000,
 							print: true,
 							context: true,
+							interactive: true,
 						},
 					],
 				},
@@ -42,6 +43,7 @@ describe("KeymapsConfigSchema", () => {
 			timeout: 5000,
 			print: true,
 			context: true,
+			interactive: true,
 		});
 	});
 

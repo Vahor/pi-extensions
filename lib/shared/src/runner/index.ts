@@ -1,3 +1,4 @@
+import { spawn } from "node:child_process";
 import { resolve } from "node:path";
 import type {
 	ExtensionAPI,
@@ -10,10 +11,17 @@ export interface CommandEntry {
 	timeout?: number;
 	print?: boolean;
 	context?: boolean;
+	interactive?: boolean;
 }
 
 const spinnerFrames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 let spinnerId = 0;
+
+interface InteractiveCommandResult {
+	code: number;
+	killed: boolean;
+	message?: string;
+}
 
 function formatCommand(command: string): string {
 	return command.length > 60 ? `${command.slice(0, 57)}...` : command;
@@ -91,6 +99,74 @@ function startCommandSpinner(
 	};
 }
 
+async function runInteractiveCommand(
+	command: string,
+	cwd: string,
+	timeout: number | undefined,
+	ctx: ExtensionContext,
+): Promise<InteractiveCommandResult> {
+	if (!ctx.hasUI || !process.stdin.isTTY || !process.stdout.isTTY) {
+		return {
+			code: 1,
+			killed: false,
+			message: "interactive commands require pi's interactive TUI",
+		};
+	}
+
+	return ctx.ui.custom<InteractiveCommandResult>((tui, _theme, _kb, done) => {
+		const shell = process.env.SHELL || "/bin/sh";
+		let completed = false;
+		let killed = false;
+		let forceKillTimer: ReturnType<typeof setTimeout> | undefined;
+		let timeoutTimer: ReturnType<typeof setTimeout> | undefined;
+
+		const finish = (result: InteractiveCommandResult): void => {
+			if (completed) return;
+			completed = true;
+			if (timeoutTimer) clearTimeout(timeoutTimer);
+			if (forceKillTimer) clearTimeout(forceKillTimer);
+			tui.start();
+			tui.requestRender(true);
+			done(result);
+		};
+
+		tui.stop();
+		process.stdout.write("\x1b[2J\x1b[H");
+
+		const child = spawn(shell, ["-c", command], {
+			cwd,
+			stdio: "inherit",
+			env: process.env,
+		});
+
+		const killChild = (): void => {
+			if (killed) return;
+			killed = true;
+			child.kill("SIGTERM");
+			forceKillTimer = setTimeout(() => {
+				if (!child.killed) child.kill("SIGKILL");
+			}, 5000);
+		};
+
+		if (timeout && timeout > 0) {
+			timeoutTimer = setTimeout(killChild, timeout);
+		}
+
+		child.on("error", (error) => {
+			finish({ code: 1, killed, message: error.message });
+		});
+		child.on("exit", (code, signal) => {
+			finish({
+				code: code ?? (signal ? 1 : 0),
+				killed,
+				message: signal ? `terminated by ${signal}` : undefined,
+			});
+		});
+
+		return { render: () => [], invalidate: () => {} };
+	});
+}
+
 export async function runCommands(
 	commands: readonly CommandEntry[],
 	cwd: string,
@@ -101,20 +177,54 @@ export async function runCommands(
 	for (const {
 		command,
 		cwd: commandCwd,
-		timeout = 30_000,
+		timeout,
 		print = true,
 		context,
+		interactive,
 	} of commands) {
 		const index = ++spinnerId;
 		const notifyLabel = `[${index}] ${label}`;
 		const resolvedCwd = commandCwd ? resolve(cwd, commandCwd) : cwd;
 
-		const stopSpinner = startCommandSpinner(ctx, command, index);
+		const stopSpinner = interactive
+			? () => {}
+			: startCommandSpinner(ctx, command, index);
 
 		try {
+			if (interactive) {
+				const result = await runInteractiveCommand(
+					command,
+					resolvedCwd,
+					timeout,
+					ctx,
+				);
+
+				if (context) {
+					sendCommandContext(
+						pi,
+						command,
+						resolvedCwd,
+						"",
+						result.message ?? "interactive command output is not captured",
+						result.code,
+						result.killed,
+					);
+				}
+
+				if (result.code !== 0) {
+					ctx.ui.notify(
+						`${notifyLabel} "${command}" failed (exit ${result.code})${result.message ? `:\n  ↳ ${result.message}` : ""}`,
+						"error",
+					);
+				} else if (print) {
+					ctx.ui.notify(`${notifyLabel} "${command}" completed`, "info");
+				}
+				continue;
+			}
+
 			const result = await pi.exec("/bin/sh", ["-c", command], {
 				cwd: resolvedCwd,
-				timeout,
+				timeout: timeout ?? 30_000,
 			});
 
 			const output = (
