@@ -1,5 +1,11 @@
 # @vahor/pi-hooks
 
+## 0.0.6
+
+### Patch Changes
+
+- [#5](https://github.com/Vahor/pi-extensions/pull/5) [`890bb92`](https://github.com/Vahor/pi-extensions/commit/890bb92a1b9c389f40a880ccc16892579aa1883c) Thanks [@Vahor](https://github.com/Vahor)! - Add an interactive command mode that suspends pi's TUI while terminal UI programs run.
+
 ## 0.0.5
 
 ### Patch Changes

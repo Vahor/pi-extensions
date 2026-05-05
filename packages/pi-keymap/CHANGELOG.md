@@ -1,5 +1,13 @@
 # @vahor/pi-keymap
 
+## 0.0.5
+
+### Patch Changes
+
+- [#5](https://github.com/Vahor/pi-extensions/pull/5) [`890bb92`](https://github.com/Vahor/pi-extensions/commit/890bb92a1b9c389f40a880ccc16892579aa1883c) Thanks [@Vahor](https://github.com/Vahor)! - Add an interactive command mode that suspends pi's TUI while terminal UI programs run.
+
+- [#7](https://github.com/Vahor/pi-extensions/pull/7) [`7a74fe8`](https://github.com/Vahor/pi-extensions/commit/7a74fe8f3874383ff89dbfebbc740f7c546f3415) Thanks [@Vahor](https://github.com/Vahor)! - Add prompt keymaps that can send pre-defined prompts. With an editor to edit them if needed.
+
 ## 0.0.4
 
 ### Patch Changes
