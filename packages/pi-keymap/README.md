@@ -57,9 +57,9 @@ If neither file exists, the extension shows a warning on session start and stays
 | `keymaps[].commands` | `array` | No | Shell commands to run. Required for direct keymaps. Optional for leader mappings that only group children. |
 | `keymaps[].print` | `boolean` | No | Print command output in the UI. Defaults `true` |
 | `keymaps[].context` | `boolean` | No | Add command output to the agent context |
-| `keymaps[].interactive` | `boolean` | No | Run terminal UI commands with pi's TUI suspended |
+| `keymaps[].interactive` | `boolean` | No | Default interactive mode for commands in this keymap |
 
-`print` and `context` can be overridden at command level.
+`print`, `context`, and `interactive` can be overridden at command level. Command-level wins over keymap-level.
 
 ### Key format
 

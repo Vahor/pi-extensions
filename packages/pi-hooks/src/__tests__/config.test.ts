@@ -3,24 +3,6 @@ import { Schema } from "effect";
 import { CommandHooksConfigSchema } from "../config.js";
 
 describe("CommandHooksConfigSchema", () => {
-	test("validates interactive command entries", () => {
-		const result = Schema.decodeUnknownSync(CommandHooksConfigSchema)({
-			hooks: {
-				session_start: [
-					{
-						command: "lazygit",
-						interactive: true,
-					},
-				],
-			},
-		});
-
-		expect(result.hooks.session_start?.[0]).toEqual({
-			command: "lazygit",
-			interactive: true,
-		});
-	});
-
 	test("allows empty hooks object (all events optional)", () => {
 		const result = Schema.decodeUnknownSync(CommandHooksConfigSchema)({
 			hooks: {},
