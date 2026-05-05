@@ -1,3 +1,7 @@
+import { spawn } from "node:child_process";
+import { mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import type {
 	ExtensionAPI,
 	ExtensionContext,
@@ -11,7 +15,7 @@ import {
 	type TrieNode,
 } from "@vahor/shared/trie";
 import { Effect } from "effect";
-import type { KeymapCommand, KeymapEntry, KeymapsConfig } from "./config.js";
+import type { KeymapEntry, KeymapsConfig } from "./config.js";
 import { KeymapsConfigSchema } from "./config.js";
 import { isValidKey } from "./keys.js";
 import { type LeaderEntry, WhichKeyOverlay } from "./which-key.js";
@@ -34,7 +38,17 @@ interface ValidatedKeymaps {
 
 type LeaderAction =
 	| { type: "prefix"; key: string }
-	| { type: "run"; commands: readonly KeymapCommand[]; label: string };
+	| { type: "run"; entry: KeymapEntry; label: string };
+
+function hasAction(entry: KeymapEntry | undefined): boolean {
+	return Boolean(entry?.commands?.length || entry?.prompt !== undefined);
+}
+
+function getEntryLabel(entry: KeymapEntry): string {
+	return (
+		entry.description ?? entry.commands?.[0]?.command ?? entry.prompt ?? ""
+	);
+}
 
 function validateKeymaps(
 	entries: readonly KeymapEntry[],
@@ -49,9 +63,9 @@ function validateKeymaps(
 				ctx.ui.notify(`keymap: key "${km.leaderKey}" is invalid`, "warning");
 				continue;
 			}
-			if (!km.commands) {
+			if (!hasAction(km)) {
 				ctx.ui.notify(
-					`keymap: "${km.leaderKey}" has no commands (direct keymaps must have commands)`,
+					`keymap: "${km.leaderKey}" has no commands or prompt (direct keymaps must have an action)`,
 					"warning",
 				);
 				continue;
@@ -82,14 +96,142 @@ function warnDeadEnds(
 ): void {
 	for (const child of node.children.values()) {
 		const childPath = `${path}${child.segment}`;
-		if (!child.payload?.commands?.length && child.children.size === 0) {
+		if (!hasAction(child.payload) && child.children.size === 0) {
 			ctx.ui.notify(
-				`keymap: "${childPath}" has no commands and no children`,
+				`keymap: "${childPath}" has no commands, prompt, or children`,
 				"warning",
 			);
 		}
 		warnDeadEnds(child, childPath, ctx);
 	}
+}
+
+function vimString(value: string): string {
+	return `'${value.replaceAll("'", "''")}'`;
+}
+
+async function openPromptInVim(
+	prompt: string,
+	ctx: ExtensionContext,
+): Promise<string | undefined> {
+	if (!ctx.hasUI || !process.stdin.isTTY || !process.stdout.isTTY) {
+		ctx.ui.notify("keymap prompt: vim requires pi's interactive TUI", "error");
+		return undefined;
+	}
+
+	const dir = await mkdtemp(join(tmpdir(), "vahor-pi-keymap-"));
+	const promptFile = join(dir, "prompt.md");
+	const savedFile = join(dir, "saved");
+	await writeFile(promptFile, prompt, "utf8");
+
+	try {
+		const result = await ctx.ui.custom<{ code: number; error?: string }>(
+			(tui, _theme, _kb, done) => {
+				let completed = false;
+
+				const finish = (result: { code: number; error?: string }): void => {
+					if (completed) return;
+					completed = true;
+					tui.start();
+					tui.requestRender(true);
+					done(result);
+				};
+
+				tui.stop();
+
+				const child = spawn(
+					"vim",
+					[
+						promptFile,
+						"-c",
+						`autocmd BufWritePost <buffer> call writefile(['saved'], ${vimString(savedFile)})`,
+					],
+					{
+						cwd: process.cwd(),
+						stdio: "inherit",
+						env: process.env,
+					},
+				);
+
+				child.on("error", (error) => {
+					finish({ code: 1, error: error.message });
+				});
+				child.on("exit", (code, signal) => {
+					finish({
+						code: code ?? (signal ? 1 : 0),
+						error: signal ? `vim terminated by ${signal}` : undefined,
+					});
+				});
+
+				return { render: () => [], invalidate: () => {} };
+			},
+		);
+
+		if (result.code !== 0) {
+			ctx.ui.notify(
+				`keymap prompt: vim failed${result.error ? `: ${result.error}` : ""}`,
+				"error",
+			);
+			return undefined;
+		}
+
+		try {
+			await stat(savedFile);
+		} catch {
+			return undefined;
+		}
+
+		return await readFile(promptFile, "utf8");
+	} finally {
+		await rm(dir, { recursive: true, force: true });
+	}
+}
+
+function applyPrompt(
+	pi: ExtensionAPI,
+	ctx: ExtensionContext,
+	content: string,
+	send: boolean | undefined,
+): void {
+	if (send) {
+		pi.sendUserMessage(content);
+		return;
+	}
+
+	ctx.ui.setEditorText(content);
+}
+
+async function runPrompt(
+	entry: KeymapEntry,
+	pi: ExtensionAPI,
+	ctx: ExtensionContext,
+): Promise<void> {
+	if (entry.prompt === undefined) return;
+
+	if (entry.open === false) {
+		ctx.ui.setEditorText(entry.prompt);
+		return;
+	}
+
+	const content = await openPromptInVim(entry.prompt, ctx);
+	if (content === undefined) return;
+
+	applyPrompt(pi, ctx, content, entry.send);
+}
+
+async function runEntry(
+	entry: KeymapEntry,
+	cwd: string,
+	pi: ExtensionAPI,
+	ctx: ExtensionContext,
+	label: string,
+): Promise<void> {
+	if (entry.commands?.length) {
+		await runCommands(entry.commands, cwd, pi, ctx, label);
+		return;
+	}
+
+	await runPrompt(entry, pi, ctx);
 }
 
 export default function (pi: ExtensionAPI) {
@@ -121,8 +263,8 @@ export default function (pi: ExtensionAPI) {
 
 		for (const km of direct) {
 			pi.registerShortcut(km.leaderKey as KeyId, {
-				description: km.description ?? km.commands?.[0]?.command,
-				handler: () => runCommands(km.commands ?? [], cwd, pi, ctx, "keymap"),
+				description: getEntryLabel(km),
+				handler: () => runEntry(km, cwd, pi, ctx, "keymap"),
 			});
 		}
 
@@ -164,8 +306,8 @@ function showLevel(
 ): void {
 	const entries: LeaderEntry[] = flattenTrieChildren(node).map((c) => ({
 		key: c.key,
-		label: c.payload?.description ?? c.payload?.commands?.[0]?.command ?? "",
-		commands: c.payload?.commands ?? [],
+		label: c.payload ? getEntryLabel(c.payload) : "",
+		hasAction: c.payload ? hasAction(c.payload) : false,
 	}));
 
 	const displayPrefix = prefixPath
@@ -185,12 +327,13 @@ function showLevel(
 							return;
 						}
 
+						const payload = childNode.payload;
 						if (childNode.children.size > 0) {
 							done({ type: "prefix", key: child.key });
-						} else if (childNode.payload?.commands?.length) {
+						} else if (payload && hasAction(payload)) {
 							done({
 								type: "run",
-								commands: childNode.payload.commands,
+								entry: payload,
 								label: `keymap <leader>${prefixPath}${child.key}`,
 							});
 						} else {
@@ -244,7 +387,7 @@ function showLevel(
 
 			onDone();
 			setTimeout(() => {
-				void runCommands(action.commands, cwd, pi, ctx, action.label);
+				void runEntry(action.entry, cwd, pi, ctx, action.label);
 			}, 5);
 		})
 		.catch((error) => {
