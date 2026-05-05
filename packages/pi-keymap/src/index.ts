@@ -1,7 +1,3 @@
-import { spawn } from "node:child_process";
-import { mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import type {
 	ExtensionAPI,
 	ExtensionContext,
@@ -9,16 +5,12 @@ import type {
 import { type KeyId, matchesKey } from "@mariozechner/pi-tui";
 import { FileNotFoundError, readConfig } from "@vahor/shared/config";
 import { runCommands } from "@vahor/shared/runner";
-import {
-	buildTrie,
-	flattenTrieChildren,
-	type TrieNode,
-} from "@vahor/shared/trie";
+import { buildTrie, type TrieNode } from "@vahor/shared/trie";
 import { Effect } from "effect";
 import type { KeymapEntry, KeymapsConfig } from "./config.js";
 import { KeymapsConfigSchema } from "./config.js";
 import { isValidKey } from "./keys.js";
-import { type LeaderEntry, WhichKeyOverlay } from "./which-key.js";
+import { showLevel } from "./ui.js";
 
 function loadConfig(cwd: string): KeymapsConfig | undefined {
 	return Effect.runSync(
@@ -35,10 +27,6 @@ interface ValidatedKeymaps {
 	direct: KeymapEntry[];
 	leader: KeymapEntry[];
 }
-
-type LeaderAction =
-	| { type: "prefix"; key: string }
-	| { type: "run"; entry: KeymapEntry; label: string };
 
 function hasAction(entry: KeymapEntry | undefined): boolean {
 	return Boolean(entry?.commands?.length || entry?.prompt !== undefined);
@@ -106,87 +94,6 @@ function warnDeadEnds(
 	}
 }
 
-function vimString(value: string): string {
-	return `'${value.replaceAll("'", "''")}'`;
-}
-
-async function openPromptInVim(
-	prompt: string,
-	ctx: ExtensionContext,
-): Promise<string | undefined> {
-	if (!ctx.hasUI || !process.stdin.isTTY || !process.stdout.isTTY) {
-		ctx.ui.notify("keymap prompt: vim requires pi's interactive TUI", "error");
-		return undefined;
-	}
-
-	const dir = await mkdtemp(join(tmpdir(), "vahor-pi-keymap-"));
-	const promptFile = join(dir, "prompt.md");
-	const savedFile = join(dir, "saved");
-	await writeFile(promptFile, prompt, "utf8");
-
-	try {
-		const result = await ctx.ui.custom<{ code: number; error?: string }>(
-			(tui, _theme, _kb, done) => {
-				let completed = false;
-
-				const finish = (result: { code: number; error?: string }): void => {
-					if (completed) return;
-					completed = true;
-					tui.start();
-					tui.requestRender(true);
-					done(result);
-				};
-
-				tui.stop();
-
-				const child = spawn(
-					"vim",
-					[
-						promptFile,
-						"-c",
-						`autocmd BufWritePost <buffer> call writefile(['saved'], ${vimString(savedFile)})`,
-					],
-					{
-						cwd: process.cwd(),
-						stdio: "inherit",
-						env: process.env,
-					},
-				);
-
-				child.on("error", (error) => {
-					finish({ code: 1, error: error.message });
-				});
-				child.on("exit", (code, signal) => {
-					finish({
-						code: code ?? (signal ? 1 : 0),
-						error: signal ? `vim terminated by ${signal}` : undefined,
-					});
-				});
-
-				return { render: () => [], invalidate: () => {} };
-			},
-		);
-
-		if (result.code !== 0) {
-			ctx.ui.notify(
-				`keymap prompt: vim failed${result.error ? `: ${result.error}` : ""}`,
-				"error",
-			);
-			return undefined;
-		}
-
-		try {
-			await stat(savedFile);
-		} catch {
-			return undefined;
-		}
-
-		return await readFile(promptFile, "utf8");
-	} finally {
-		await rm(dir, { recursive: true, force: true });
-	}
-}
-
 function applyPrompt(
 	pi: ExtensionAPI,
 	ctx: ExtensionContext,
@@ -213,7 +120,10 @@ async function runPrompt(
 		return;
 	}
 
-	const content = await openPromptInVim(entry.prompt, ctx);
+	const content = await ctx.ui.editor(
+		entry.description ?? "Editor",
+		entry.prompt,
+	);
 	if (content === undefined) return;
 
 	applyPrompt(pi, ctx, content, entry.send);
@@ -231,7 +141,12 @@ async function runEntry(
 		return;
 	}
 
-	await runPrompt(entry, pi, ctx);
+	if (entry.prompt !== undefined) {
+		await runPrompt(entry, pi, ctx);
+		return;
+	}
+
+	ctx.ui.notify(`${label} has no commands or prompt`, "warning");
 }
 
 export default function (pi: ExtensionAPI) {
@@ -283,8 +198,17 @@ export default function (pi: ExtensionAPI) {
 			if (ctx.hasUI && ctx.ui.getEditorText().trim() !== "") return;
 
 			leaderPressed = true;
-			showLevel(ctx, root, "", config.leader, pi, cwd, () => {
-				leaderPressed = false;
+			showLevel({
+				ctx,
+				node: root,
+				prefixPath: "",
+				leaderKey: config.leader,
+				hasAction,
+				getEntryLabel,
+				onRun: (entry, label) => runEntry(entry, cwd, pi, ctx, label),
+				onDone: () => {
+					leaderPressed = false;
+				},
 			});
 			return { consume: true };
 		});
@@ -293,106 +217,4 @@ export default function (pi: ExtensionAPI) {
 			unsubscribe();
 		});
 	});
-}
-
-function showLevel(
-	ctx: ExtensionContext,
-	node: TrieNode<KeymapEntry>,
-	prefixPath: string,
-	leaderKey: string,
-	pi: ExtensionAPI,
-	cwd: string,
-	onDone: () => void,
-): void {
-	const entries: LeaderEntry[] = flattenTrieChildren(node).map((c) => ({
-		key: c.key,
-		label: c.payload ? getEntryLabel(c.payload) : "",
-		hasAction: c.payload ? hasAction(c.payload) : false,
-	}));
-
-	const displayPrefix = prefixPath
-		? `<${leaderKey}>${prefixPath}`
-		: `<${leaderKey}>`;
-
-	void ctx.ui
-		.custom<LeaderAction | undefined>(
-			(_tui, theme, _kb, done) => {
-				const overlay = new WhichKeyOverlay(
-					theme,
-					entries,
-					(child) => {
-						const childNode = node.children.get(child.key);
-						if (!childNode) {
-							done(undefined);
-							return;
-						}
-
-						const payload = childNode.payload;
-						if (childNode.children.size > 0) {
-							done({ type: "prefix", key: child.key });
-						} else if (payload && hasAction(payload)) {
-							done({
-								type: "run",
-								entry: payload,
-								label: `keymap <leader>${prefixPath}${child.key}`,
-							});
-						} else {
-							done(undefined);
-						}
-					},
-					() => done(undefined),
-					displayPrefix,
-				);
-
-				return {
-					render: (w: number) => overlay.render(w),
-					handleInput: (data: string) => overlay.handleInput(data),
-					invalidate: () => overlay.invalidate(),
-					dispose: () => overlay.dispose(),
-				};
-			},
-			{
-				overlay: true,
-				overlayOptions: {
-					anchor: "bottom-center",
-					width: "90%",
-					margin: { bottom: 4 },
-				},
-			},
-		)
-		.then((action) => {
-			if (!action) {
-				onDone();
-				return;
-			}
-
-			if (action.type === "prefix") {
-				const childNode = node.children.get(action.key);
-				if (!childNode) {
-					onDone();
-					return;
-				}
-
-				showLevel(
-					ctx,
-					childNode,
-					`${prefixPath}${action.key}`,
-					leaderKey,
-					pi,
-					cwd,
-					onDone,
-				);
-				return;
-			}
-
-			onDone();
-			setTimeout(() => {
-				void runEntry(action.entry, cwd, pi, ctx, action.label);
-			}, 5);
-		})
-		.catch((error) => {
-			onDone();
-			const message = error instanceof Error ? error.message : String(error);
-			ctx.ui.notify(`keymap overlay error: ${message}`, "error");
-		});
 }
