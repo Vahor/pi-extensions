@@ -1,5 +1,11 @@
 # @vahor/pi-hooks
 
+## 0.0.7
+
+### Patch Changes
+
+- [`7b81a15`](https://github.com/Vahor/pi-extensions/commit/7b81a152ebfb590b28a0279bdd162d3e937d1b16) Thanks [@Vahor](https://github.com/Vahor)! - Update pi peer dependencies and imports to the `@earendil-works/*` packages from `earendil-works/pi-mono`.
+
 ## 0.0.6
 
 ### Patch Changes
