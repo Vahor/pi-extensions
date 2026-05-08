@@ -1,5 +1,11 @@
 # @vahor/pi-keymap
 
+## 0.0.7
+
+### Patch Changes
+
+- [`5402d54`](https://github.com/Vahor/pi-extensions/commit/5402d549d6a4f440ff8ee9d56088c5c5ebfdadc1) Thanks [@Vahor](https://github.com/Vahor)! - Send prompt automatically when `send: true`
+
 ## 0.0.6
 
 ### Patch Changes
