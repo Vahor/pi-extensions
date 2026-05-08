@@ -1,0 +1,1001 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "https://raw.githubusercontent.com/Vahor/pi-extensions/main/packages/pi-hooks/schemas/hooks.schema.json",
+	"title": "pi-hooks config",
+	"type": "object",
+	"required": ["hooks"],
+	"properties": {
+		"$schema": {
+			"type": "string",
+			"description": "JSON Schema URI for editor validation."
+		},
+		"hooks": {
+			"type": "object",
+			"required": [],
+			"properties": {
+				"session_start": {
+					"type": "array",
+					"items": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "object",
+								"required": ["command"],
+								"properties": {
+									"command": {
+										"type": "string"
+									},
+									"cwd": {
+										"type": "string"
+									},
+									"timeout": {
+										"type": "number"
+									},
+									"print": {
+										"type": "boolean"
+									},
+									"context": {
+										"type": "boolean"
+									},
+									"interactive": {
+										"type": "boolean"
+									}
+								},
+								"additionalProperties": false
+							}
+						]
+					}
+				},
+				"session_before_switch": {
+					"type": "array",
+					"items": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "object",
+								"required": ["command"],
+								"properties": {
+									"command": {
+										"type": "string"
+									},
+									"cwd": {
+										"type": "string"
+									},
+									"timeout": {
+										"type": "number"
+									},
+									"print": {
+										"type": "boolean"
+									},
+									"context": {
+										"type": "boolean"
+									},
+									"interactive": {
+										"type": "boolean"
+									}
+								},
+								"additionalProperties": false
+							}
+						]
+					}
+				},
+				"session_before_fork": {
+					"type": "array",
+					"items": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "object",
+								"required": ["command"],
+								"properties": {
+									"command": {
+										"type": "string"
+									},
+									"cwd": {
+										"type": "string"
+									},
+									"timeout": {
+										"type": "number"
+									},
+									"print": {
+										"type": "boolean"
+									},
+									"context": {
+										"type": "boolean"
+									},
+									"interactive": {
+										"type": "boolean"
+									}
+								},
+								"additionalProperties": false
+							}
+						]
+					}
+				},
+				"session_before_compact": {
+					"type": "array",
+					"items": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "object",
+								"required": ["command"],
+								"properties": {
+									"command": {
+										"type": "string"
+									},
+									"cwd": {
+										"type": "string"
+									},
+									"timeout": {
+										"type": "number"
+									},
+									"print": {
+										"type": "boolean"
+									},
+									"context": {
+										"type": "boolean"
+									},
+									"interactive": {
+										"type": "boolean"
+									}
+								},
+								"additionalProperties": false
+							}
+						]
+					}
+				},
+				"session_compact": {
+					"type": "array",
+					"items": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "object",
+								"required": ["command"],
+								"properties": {
+									"command": {
+										"type": "string"
+									},
+									"cwd": {
+										"type": "string"
+									},
+									"timeout": {
+										"type": "number"
+									},
+									"print": {
+										"type": "boolean"
+									},
+									"context": {
+										"type": "boolean"
+									},
+									"interactive": {
+										"type": "boolean"
+									}
+								},
+								"additionalProperties": false
+							}
+						]
+					}
+				},
+				"session_before_tree": {
+					"type": "array",
+					"items": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "object",
+								"required": ["command"],
+								"properties": {
+									"command": {
+										"type": "string"
+									},
+									"cwd": {
+										"type": "string"
+									},
+									"timeout": {
+										"type": "number"
+									},
+									"print": {
+										"type": "boolean"
+									},
+									"context": {
+										"type": "boolean"
+									},
+									"interactive": {
+										"type": "boolean"
+									}
+								},
+								"additionalProperties": false
+							}
+						]
+					}
+				},
+				"session_tree": {
+					"type": "array",
+					"items": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "object",
+								"required": ["command"],
+								"properties": {
+									"command": {
+										"type": "string"
+									},
+									"cwd": {
+										"type": "string"
+									},
+									"timeout": {
+										"type": "number"
+									},
+									"print": {
+										"type": "boolean"
+									},
+									"context": {
+										"type": "boolean"
+									},
+									"interactive": {
+										"type": "boolean"
+									}
+								},
+								"additionalProperties": false
+							}
+						]
+					}
+				},
+				"session_shutdown": {
+					"type": "array",
+					"items": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "object",
+								"required": ["command"],
+								"properties": {
+									"command": {
+										"type": "string"
+									},
+									"cwd": {
+										"type": "string"
+									},
+									"timeout": {
+										"type": "number"
+									},
+									"print": {
+										"type": "boolean"
+									},
+									"context": {
+										"type": "boolean"
+									},
+									"interactive": {
+										"type": "boolean"
+									}
+								},
+								"additionalProperties": false
+							}
+						]
+					}
+				},
+				"before_agent_start": {
+					"type": "array",
+					"items": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "object",
+								"required": ["command"],
+								"properties": {
+									"command": {
+										"type": "string"
+									},
+									"cwd": {
+										"type": "string"
+									},
+									"timeout": {
+										"type": "number"
+									},
+									"print": {
+										"type": "boolean"
+									},
+									"context": {
+										"type": "boolean"
+									},
+									"interactive": {
+										"type": "boolean"
+									}
+								},
+								"additionalProperties": false
+							}
+						]
+					}
+				},
+				"agent_start": {
+					"type": "array",
+					"items": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "object",
+								"required": ["command"],
+								"properties": {
+									"command": {
+										"type": "string"
+									},
+									"cwd": {
+										"type": "string"
+									},
+									"timeout": {
+										"type": "number"
+									},
+									"print": {
+										"type": "boolean"
+									},
+									"context": {
+										"type": "boolean"
+									},
+									"interactive": {
+										"type": "boolean"
+									}
+								},
+								"additionalProperties": false
+							}
+						]
+					}
+				},
+				"agent_end": {
+					"type": "array",
+					"items": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "object",
+								"required": ["command"],
+								"properties": {
+									"command": {
+										"type": "string"
+									},
+									"cwd": {
+										"type": "string"
+									},
+									"timeout": {
+										"type": "number"
+									},
+									"print": {
+										"type": "boolean"
+									},
+									"context": {
+										"type": "boolean"
+									},
+									"interactive": {
+										"type": "boolean"
+									}
+								},
+								"additionalProperties": false
+							}
+						]
+					}
+				},
+				"turn_start": {
+					"type": "array",
+					"items": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "object",
+								"required": ["command"],
+								"properties": {
+									"command": {
+										"type": "string"
+									},
+									"cwd": {
+										"type": "string"
+									},
+									"timeout": {
+										"type": "number"
+									},
+									"print": {
+										"type": "boolean"
+									},
+									"context": {
+										"type": "boolean"
+									},
+									"interactive": {
+										"type": "boolean"
+									}
+								},
+								"additionalProperties": false
+							}
+						]
+					}
+				},
+				"turn_end": {
+					"type": "array",
+					"items": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "object",
+								"required": ["command"],
+								"properties": {
+									"command": {
+										"type": "string"
+									},
+									"cwd": {
+										"type": "string"
+									},
+									"timeout": {
+										"type": "number"
+									},
+									"print": {
+										"type": "boolean"
+									},
+									"context": {
+										"type": "boolean"
+									},
+									"interactive": {
+										"type": "boolean"
+									}
+								},
+								"additionalProperties": false
+							}
+						]
+					}
+				},
+				"message_start": {
+					"type": "array",
+					"items": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "object",
+								"required": ["command"],
+								"properties": {
+									"command": {
+										"type": "string"
+									},
+									"cwd": {
+										"type": "string"
+									},
+									"timeout": {
+										"type": "number"
+									},
+									"print": {
+										"type": "boolean"
+									},
+									"context": {
+										"type": "boolean"
+									},
+									"interactive": {
+										"type": "boolean"
+									}
+								},
+								"additionalProperties": false
+							}
+						]
+					}
+				},
+				"message_update": {
+					"type": "array",
+					"items": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "object",
+								"required": ["command"],
+								"properties": {
+									"command": {
+										"type": "string"
+									},
+									"cwd": {
+										"type": "string"
+									},
+									"timeout": {
+										"type": "number"
+									},
+									"print": {
+										"type": "boolean"
+									},
+									"context": {
+										"type": "boolean"
+									},
+									"interactive": {
+										"type": "boolean"
+									}
+								},
+								"additionalProperties": false
+							}
+						]
+					}
+				},
+				"message_end": {
+					"type": "array",
+					"items": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "object",
+								"required": ["command"],
+								"properties": {
+									"command": {
+										"type": "string"
+									},
+									"cwd": {
+										"type": "string"
+									},
+									"timeout": {
+										"type": "number"
+									},
+									"print": {
+										"type": "boolean"
+									},
+									"context": {
+										"type": "boolean"
+									},
+									"interactive": {
+										"type": "boolean"
+									}
+								},
+								"additionalProperties": false
+							}
+						]
+					}
+				},
+				"tool_execution_start": {
+					"type": "array",
+					"items": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "object",
+								"required": ["command"],
+								"properties": {
+									"command": {
+										"type": "string"
+									},
+									"cwd": {
+										"type": "string"
+									},
+									"timeout": {
+										"type": "number"
+									},
+									"print": {
+										"type": "boolean"
+									},
+									"context": {
+										"type": "boolean"
+									},
+									"interactive": {
+										"type": "boolean"
+									}
+								},
+								"additionalProperties": false
+							}
+						]
+					}
+				},
+				"tool_execution_update": {
+					"type": "array",
+					"items": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "object",
+								"required": ["command"],
+								"properties": {
+									"command": {
+										"type": "string"
+									},
+									"cwd": {
+										"type": "string"
+									},
+									"timeout": {
+										"type": "number"
+									},
+									"print": {
+										"type": "boolean"
+									},
+									"context": {
+										"type": "boolean"
+									},
+									"interactive": {
+										"type": "boolean"
+									}
+								},
+								"additionalProperties": false
+							}
+						]
+					}
+				},
+				"tool_execution_end": {
+					"type": "array",
+					"items": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "object",
+								"required": ["command"],
+								"properties": {
+									"command": {
+										"type": "string"
+									},
+									"cwd": {
+										"type": "string"
+									},
+									"timeout": {
+										"type": "number"
+									},
+									"print": {
+										"type": "boolean"
+									},
+									"context": {
+										"type": "boolean"
+									},
+									"interactive": {
+										"type": "boolean"
+									}
+								},
+								"additionalProperties": false
+							}
+						]
+					}
+				},
+				"context": {
+					"type": "array",
+					"items": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "object",
+								"required": ["command"],
+								"properties": {
+									"command": {
+										"type": "string"
+									},
+									"cwd": {
+										"type": "string"
+									},
+									"timeout": {
+										"type": "number"
+									},
+									"print": {
+										"type": "boolean"
+									},
+									"context": {
+										"type": "boolean"
+									},
+									"interactive": {
+										"type": "boolean"
+									}
+								},
+								"additionalProperties": false
+							}
+						]
+					}
+				},
+				"before_provider_request": {
+					"type": "array",
+					"items": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "object",
+								"required": ["command"],
+								"properties": {
+									"command": {
+										"type": "string"
+									},
+									"cwd": {
+										"type": "string"
+									},
+									"timeout": {
+										"type": "number"
+									},
+									"print": {
+										"type": "boolean"
+									},
+									"context": {
+										"type": "boolean"
+									},
+									"interactive": {
+										"type": "boolean"
+									}
+								},
+								"additionalProperties": false
+							}
+						]
+					}
+				},
+				"after_provider_response": {
+					"type": "array",
+					"items": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "object",
+								"required": ["command"],
+								"properties": {
+									"command": {
+										"type": "string"
+									},
+									"cwd": {
+										"type": "string"
+									},
+									"timeout": {
+										"type": "number"
+									},
+									"print": {
+										"type": "boolean"
+									},
+									"context": {
+										"type": "boolean"
+									},
+									"interactive": {
+										"type": "boolean"
+									}
+								},
+								"additionalProperties": false
+							}
+						]
+					}
+				},
+				"model_select": {
+					"type": "array",
+					"items": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "object",
+								"required": ["command"],
+								"properties": {
+									"command": {
+										"type": "string"
+									},
+									"cwd": {
+										"type": "string"
+									},
+									"timeout": {
+										"type": "number"
+									},
+									"print": {
+										"type": "boolean"
+									},
+									"context": {
+										"type": "boolean"
+									},
+									"interactive": {
+										"type": "boolean"
+									}
+								},
+								"additionalProperties": false
+							}
+						]
+					}
+				},
+				"thinking_level_select": {
+					"type": "array",
+					"items": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "object",
+								"required": ["command"],
+								"properties": {
+									"command": {
+										"type": "string"
+									},
+									"cwd": {
+										"type": "string"
+									},
+									"timeout": {
+										"type": "number"
+									},
+									"print": {
+										"type": "boolean"
+									},
+									"context": {
+										"type": "boolean"
+									},
+									"interactive": {
+										"type": "boolean"
+									}
+								},
+								"additionalProperties": false
+							}
+						]
+					}
+				},
+				"tool_call": {
+					"type": "array",
+					"items": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "object",
+								"required": ["command"],
+								"properties": {
+									"command": {
+										"type": "string"
+									},
+									"cwd": {
+										"type": "string"
+									},
+									"timeout": {
+										"type": "number"
+									},
+									"print": {
+										"type": "boolean"
+									},
+									"context": {
+										"type": "boolean"
+									},
+									"interactive": {
+										"type": "boolean"
+									}
+								},
+								"additionalProperties": false
+							}
+						]
+					}
+				},
+				"tool_result": {
+					"type": "array",
+					"items": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "object",
+								"required": ["command"],
+								"properties": {
+									"command": {
+										"type": "string"
+									},
+									"cwd": {
+										"type": "string"
+									},
+									"timeout": {
+										"type": "number"
+									},
+									"print": {
+										"type": "boolean"
+									},
+									"context": {
+										"type": "boolean"
+									},
+									"interactive": {
+										"type": "boolean"
+									}
+								},
+								"additionalProperties": false
+							}
+						]
+					}
+				},
+				"input": {
+					"type": "array",
+					"items": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "object",
+								"required": ["command"],
+								"properties": {
+									"command": {
+										"type": "string"
+									},
+									"cwd": {
+										"type": "string"
+									},
+									"timeout": {
+										"type": "number"
+									},
+									"print": {
+										"type": "boolean"
+									},
+									"context": {
+										"type": "boolean"
+									},
+									"interactive": {
+										"type": "boolean"
+									}
+								},
+								"additionalProperties": false
+							}
+						]
+					}
+				},
+				"resources_discover": {
+					"type": "array",
+					"items": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "object",
+								"required": ["command"],
+								"properties": {
+									"command": {
+										"type": "string"
+									},
+									"cwd": {
+										"type": "string"
+									},
+									"timeout": {
+										"type": "number"
+									},
+									"print": {
+										"type": "boolean"
+									},
+									"context": {
+										"type": "boolean"
+									},
+									"interactive": {
+										"type": "boolean"
+									}
+								},
+								"additionalProperties": false
+							}
+						]
+					}
+				}
+			},
+			"additionalProperties": false
+		}
+	},
+	"additionalProperties": false
+}

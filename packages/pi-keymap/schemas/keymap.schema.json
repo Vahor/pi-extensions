@@ -1,0 +1,187 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "https://raw.githubusercontent.com/Vahor/pi-extensions/main/packages/pi-keymap/schemas/keymap.schema.json",
+	"title": "pi-keymap config",
+	"type": "object",
+	"required": ["keymaps", "leader"],
+	"properties": {
+		"$schema": {
+			"type": "string",
+			"description": "JSON Schema URI for editor validation."
+		},
+		"keymaps": {
+			"type": "array",
+			"items": {
+				"anyOf": [
+					{
+						"type": "object",
+						"required": ["key", "commands"],
+						"properties": {
+							"key": {
+								"type": "string"
+							},
+							"description": {
+								"type": "string"
+							},
+							"commands": {
+								"type": "array",
+								"minItems": 1,
+								"items": {
+									"anyOf": [
+										{
+											"type": "string"
+										},
+										{
+											"type": "object",
+											"required": ["command"],
+											"properties": {
+												"command": {
+													"type": "string"
+												},
+												"cwd": {
+													"type": "string"
+												},
+												"timeout": {
+													"type": "number"
+												},
+												"print": {
+													"type": "boolean"
+												},
+												"context": {
+													"type": "boolean"
+												},
+												"interactive": {
+													"type": "boolean"
+												}
+											},
+											"additionalProperties": false
+										}
+									]
+								}
+							},
+							"prompt": {
+								"$id": "/schemas/never",
+								"not": {},
+								"title": "never"
+							},
+							"send": {
+								"$id": "/schemas/never",
+								"not": {},
+								"title": "never"
+							},
+							"open": {
+								"$id": "/schemas/never",
+								"not": {},
+								"title": "never"
+							},
+							"print": {
+								"type": "boolean"
+							},
+							"context": {
+								"type": "boolean"
+							},
+							"interactive": {
+								"type": "boolean"
+							}
+						},
+						"additionalProperties": false
+					},
+					{
+						"type": "object",
+						"required": ["key", "prompt"],
+						"properties": {
+							"key": {
+								"type": "string"
+							},
+							"description": {
+								"type": "string"
+							},
+							"commands": {
+								"$id": "/schemas/never",
+								"not": {},
+								"title": "never"
+							},
+							"prompt": {
+								"type": "string"
+							},
+							"print": {
+								"$id": "/schemas/never",
+								"not": {},
+								"title": "never"
+							},
+							"context": {
+								"$id": "/schemas/never",
+								"not": {},
+								"title": "never"
+							},
+							"interactive": {
+								"$id": "/schemas/never",
+								"not": {},
+								"title": "never"
+							},
+							"send": {
+								"type": "boolean"
+							},
+							"open": {
+								"type": "boolean"
+							}
+						},
+						"additionalProperties": false
+					},
+					{
+						"type": "object",
+						"required": ["key"],
+						"properties": {
+							"key": {
+								"type": "string"
+							},
+							"description": {
+								"type": "string"
+							},
+							"commands": {
+								"$id": "/schemas/never",
+								"not": {},
+								"title": "never"
+							},
+							"prompt": {
+								"$id": "/schemas/never",
+								"not": {},
+								"title": "never"
+							},
+							"print": {
+								"$id": "/schemas/never",
+								"not": {},
+								"title": "never"
+							},
+							"context": {
+								"$id": "/schemas/never",
+								"not": {},
+								"title": "never"
+							},
+							"interactive": {
+								"$id": "/schemas/never",
+								"not": {},
+								"title": "never"
+							},
+							"send": {
+								"$id": "/schemas/never",
+								"not": {},
+								"title": "never"
+							},
+							"open": {
+								"$id": "/schemas/never",
+								"not": {},
+								"title": "never"
+							}
+						},
+						"additionalProperties": false
+					}
+				]
+			}
+		},
+		"leader": {
+			"type": "string"
+		}
+	},
+	"additionalProperties": false
+}

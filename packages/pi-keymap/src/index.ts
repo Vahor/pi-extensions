@@ -8,13 +8,15 @@ import { runCommands } from "@vahor/shared/runner";
 import { buildTrie, type TrieNode } from "@vahor/shared/trie";
 import { Effect } from "effect";
 import type { KeymapEntry, KeymapsConfig } from "./config.js";
-import { KeymapsConfigSchema } from "./config.js";
+import { EmptyKeymapsConfig, KeymapsConfigSchema } from "./config.js";
 import { isValidKey } from "./keys.js";
 import { showLevel } from "./ui.js";
 
 function loadConfig(cwd: string): KeymapsConfig | undefined {
 	return Effect.runSync(
-		readConfig("keymap.json", KeymapsConfigSchema, cwd).pipe(
+		readConfig("keymap.json", KeymapsConfigSchema, cwd, {
+			createIfMissing: EmptyKeymapsConfig,
+		}).pipe(
 			Effect.catchIf(
 				(error) => error instanceof FileNotFoundError,
 				() => Effect.succeed(undefined),

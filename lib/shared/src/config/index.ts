@@ -3,6 +3,7 @@ export {
 	FileNotFoundError,
 	ParseError,
 	ValidationError,
+	WriteError,
 } from "./errors.js";
 export { mergeSettings } from "./merge.js";
 export { decodeConfig, parseConfig, parseJson } from "./parse.js";

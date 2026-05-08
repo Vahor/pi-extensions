@@ -1,6 +1,7 @@
-import { readFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname } from "node:path";
 import { Effect, Option, Schema } from "effect";
-import { type ConfigError, FileNotFoundError } from "./errors.js";
+import { type ConfigError, FileNotFoundError, WriteError } from "./errors.js";
 import { mergeSettings } from "./merge.js";
 import { decodeConfig, parseJson } from "./parse.js";
 import { getGlobalConfigPath, getProjectConfigPath } from "./paths.js";
@@ -38,6 +39,18 @@ const readConfigFile = (
 		return Option.some(object);
 	});
 
+const writeConfigFile = (
+	path: string,
+	value: Readonly<Record<string, unknown>>,
+): Effect.Effect<void, ConfigError> =>
+	Effect.try({
+		try: () => {
+			mkdirSync(dirname(path), { recursive: true });
+			writeFileSync(path, `${JSON.stringify(value, null, "\t")}\n`, "utf-8");
+		},
+		catch: (err) => new WriteError(path, err),
+	});
+
 const readConfigFiles = (
 	cwd: string,
 	filename: string,
@@ -59,10 +72,15 @@ export const readSettings = (
 ): Effect.Effect<Record<string, unknown>, ConfigError> =>
 	readConfigFiles(cwd, "settings.json");
 
+export interface ReadConfigOptions {
+	readonly createIfMissing?: Readonly<Record<string, unknown>>;
+}
+
 export const readConfig = <A, I>(
 	filename: string,
 	schema: Schema.Schema<A, I>,
 	cwd: string = process.cwd(),
+	options: ReadConfigOptions = {},
 ): Effect.Effect<A, ConfigError> =>
 	Effect.gen(function* () {
 		const globalPath = getGlobalConfigPath(filename);
@@ -72,7 +90,12 @@ export const readConfig = <A, I>(
 		const projectConfig = yield* readConfigFile(projectPath);
 
 		if (Option.isNone(globalConfig) && Option.isNone(projectConfig)) {
-			return yield* Effect.fail(new FileNotFoundError(projectPath));
+			if (options.createIfMissing === undefined) {
+				return yield* Effect.fail(new FileNotFoundError(projectPath));
+			}
+
+			yield* writeConfigFile(projectPath, options.createIfMissing);
+			return yield* decodeConfig(options.createIfMissing, schema);
 		}
 
 		const merged = mergeSettings(

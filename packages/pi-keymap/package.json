@@ -19,7 +19,8 @@
 		"url": "https://github.com/Vahor/pi-extensions/issues"
 	},
 	"files": [
-		"dist"
+		"dist",
+		"schemas"
 	],
 	"keywords": [
 		"pi-package",

@@ -17,7 +17,7 @@ Configuration is loaded from both locations and merged recursively:
 | `~/.pi/agent/keymap.json` | Global keymaps |
 | `.pi/keymap.json` | Project keymaps; overrides global values |
 
-If neither file exists, the extension shows a warning on session start and stays disabled.
+If neither file exists, the extension creates `.pi/keymap.json` with an empty config and a `$schema` field for editor validation.
 
 ```jsonc
 // .pi/keymap.json

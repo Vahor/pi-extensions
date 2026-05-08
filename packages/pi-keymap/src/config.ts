@@ -1,5 +1,8 @@
 import { Schema } from "effect";
 
+export const KeymapConfigSchemaUrl =
+	"https://raw.githubusercontent.com/Vahor/pi-extensions/main/packages/pi-keymap/schemas/keymap.schema.json";
+
 const KeymapCommandStruct = Schema.Struct({
 	command: Schema.String,
 	cwd: Schema.optional(Schema.String),
@@ -159,6 +162,12 @@ Set "interactive": true for terminal UI commands like lazygit, vim, htop, or fzf
 Leader: a single character or named key (e.g. "f", "t", "enter")`,
 	}),
 });
+
+export const EmptyKeymapsConfig = {
+	$schema: KeymapConfigSchemaUrl,
+	leader: "space",
+	keymaps: [],
+} as const;
 
 export type KeymapCommand = Schema.Schema.Type<typeof KeymapCommandSchema>;
 export type KeymapsConfig = Schema.Schema.Type<typeof KeymapsConfigSchema>;

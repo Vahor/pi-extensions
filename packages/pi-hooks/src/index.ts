@@ -3,11 +3,17 @@ import { FileNotFoundError, readConfig } from "@vahor/shared/config";
 import { runCommands } from "@vahor/shared/runner";
 import { Effect } from "effect";
 import type { CommandHooksConfig } from "./config.js";
-import { CommandHooksConfigSchema, PiEvent } from "./config.js";
+import {
+	CommandHooksConfigSchema,
+	EmptyCommandHooksConfig,
+	PiEvent,
+} from "./config.js";
 
 function loadConfig(cwd: string): CommandHooksConfig | undefined {
 	return Effect.runSync(
-		readConfig("hooks.json", CommandHooksConfigSchema, cwd).pipe(
+		readConfig("hooks.json", CommandHooksConfigSchema, cwd, {
+			createIfMissing: EmptyCommandHooksConfig,
+		}).pipe(
 			Effect.catchIf(
 				(error) => error instanceof FileNotFoundError,
 				() => Effect.succeed(undefined),
