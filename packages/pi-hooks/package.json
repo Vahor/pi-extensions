@@ -42,7 +42,7 @@
 		"effect": "^3.21.2"
 	},
 	"peerDependencies": {
-		"@mariozechner/pi-coding-agent": "*"
+		"@earendil-works/pi-coding-agent": "*"
 	},
 	"devDependencies": {
 		"@types/bun": "^1.3.13",

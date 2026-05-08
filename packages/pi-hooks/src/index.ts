@@ -1,4 +1,4 @@
-import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
+import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { FileNotFoundError, readConfig } from "@vahor/shared/config";
 import { runCommands } from "@vahor/shared/runner";
 import { Effect } from "effect";

@@ -1,4 +1,4 @@
-import type { ExtensionContext } from "@mariozechner/pi-coding-agent";
+import type { ExtensionContext } from "@earendil-works/pi-coding-agent";
 import { flattenTrieChildren, type TrieNode } from "@vahor/shared/trie";
 import type { KeymapEntry } from "./config.js";
 import { type LeaderEntry, WhichKeyOverlay } from "./which-key.js";

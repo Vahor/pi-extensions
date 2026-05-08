@@ -16,7 +16,7 @@ export default defineConfig({
 		},
 	},
 	deps: {
-		neverBundle: ["effect", "@mariozechner/pi-coding-agent"],
+		neverBundle: ["effect", "@earendil-works/pi-coding-agent"],
 		alwaysBundle: [/^@vahor\/shared/],
 	},
 });

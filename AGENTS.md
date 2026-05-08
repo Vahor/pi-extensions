@@ -55,7 +55,7 @@ Always start by making a plan for your changes. Gather requirements, read the is
 - **Never assume file contents**: Always read files before using or modifying them.
 - **Check existing implementations**: Search the codebase for similar patterns before adding new ones.
 - **Effect-TS patterns**: Use `Effect.gen` for generators, `Schema` for validation, tagged errors (`_tag` property).
-- **Pi extension API**: Extensions export a default function receiving `ExtensionAPI`. See [`@mariozechner/pi-coding-agent` docs](https://pi.dev) for the full API.
+- **Pi extension API**: Extensions export a default function receiving `ExtensionAPI`. See [`@earendil-works/pi-coding-agent`](https://pi.dev) docs for the full API.
 - **Config files**: Follow the established merge pattern (global + project override).
 - **Remove unused code**: Clean up after feature completion, use `bun run format` to detect issues.
 - **Changesets**: Create a changeset when making a PR (patch for 0.x.x).

@@ -1,8 +1,8 @@
 import type {
 	ExtensionAPI,
 	ExtensionContext,
-} from "@mariozechner/pi-coding-agent";
-import { type KeyId, matchesKey } from "@mariozechner/pi-tui";
+} from "@earendil-works/pi-coding-agent";
+import { type KeyId, matchesKey } from "@earendil-works/pi-tui";
 import { FileNotFoundError, readConfig } from "@vahor/shared/config";
 import { runCommands } from "@vahor/shared/runner";
 import { buildTrie, type TrieNode } from "@vahor/shared/trie";
