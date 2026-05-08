@@ -25,6 +25,7 @@
 		"dev": "bun run --filter '*' dev",
 		"format": "bunx @biomejs/biome check ./ --write",
 		"typecheck": "bun run --filter '*' typecheck",
+		"schemas": "bun scripts/generate-config-schemas.ts && bunx @biomejs/biome format packages/*/schemas/*.json --write",
 		"ci:version": "bunx @changesets/cli version && bun update",
 		"ci:publish": "for dir in packages/*; do (cd \"$dir\" && bun run build && bun publish || true); done && bunx changeset tag"
 	},

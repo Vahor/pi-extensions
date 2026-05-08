@@ -1,6 +1,9 @@
 import { Schema } from "effect";
 import { PiEvent } from "./events.js";
 
+export const HooksConfigSchemaUrl =
+	"https://raw.githubusercontent.com/Vahor/pi-extensions/main/packages/pi-hooks/schemas/hooks.schema.json";
+
 const HookEntryStruct = Schema.Struct({
 	command: Schema.String,
 	cwd: Schema.optional(Schema.String),
@@ -38,6 +41,11 @@ export const CommandHooksConfigSchema = Schema.Struct({
 Valid events: ${PiEvent.literals.join(", ")}`,
 	}),
 });
+
+export const EmptyCommandHooksConfig = {
+	$schema: HooksConfigSchemaUrl,
+	hooks: {},
+} as const;
 
 export type HookEntry = Schema.Schema.Type<typeof HookEntrySchema>;
 export type CommandHooksConfig = Schema.Schema.Type<

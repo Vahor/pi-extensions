@@ -24,4 +24,18 @@ export class FileNotFoundError extends Error {
 	}
 }
 
-export type ConfigError = ParseError | ValidationError | FileNotFoundError;
+export class WriteError extends Error {
+	readonly _tag = "WriteError";
+	constructor(
+		readonly path: string,
+		readonly originalCause: unknown,
+	) {
+		super(`Failed to write config file: ${path}`);
+	}
+}
+
+export type ConfigError =
+	| ParseError
+	| ValidationError
+	| FileNotFoundError
+	| WriteError;

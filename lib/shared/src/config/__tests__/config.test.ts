@@ -2,7 +2,14 @@ import { afterAll, beforeEach, describe, expect, test } from "bun:test";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { Cause, Effect, Exit, Schema } from "effect";
-import { resetFileMock, writeJson, writeText } from "./file-mock.js";
+import {
+	mkdirSyncMock,
+	readText,
+	resetFileMock,
+	writeFileSyncMock,
+	writeJson,
+	writeText,
+} from "./file-mock.js";
 
 const {
 	FileNotFoundError,
@@ -142,6 +149,32 @@ describe("readConfig", () => {
 		if (Exit.isFailure(exit) && Cause.isFailType(exit.cause)) {
 			expect(exit.cause.error).toBeInstanceOf(FileNotFoundError);
 		}
+	});
+
+	test("creates and returns a default project config when no config files exist", () => {
+		const path = getProjectConfigPath(projectDir, "command-hooks.json");
+		const config = Effect.runSync(
+			readConfig("command-hooks.json", HookSchema, projectDir, {
+				createIfMissing: {
+					$schema: "https://example.com/command-hooks.schema.json",
+					hooks: {},
+				},
+			}),
+		);
+
+		expect(config.hooks).toEqual({});
+		expect(JSON.parse(readText(path) ?? "")).toEqual({
+			$schema: "https://example.com/command-hooks.schema.json",
+			hooks: {},
+		});
+		expect(mkdirSyncMock).toHaveBeenCalledWith(join(projectDir, ".pi"), {
+			recursive: true,
+		});
+		expect(writeFileSyncMock).toHaveBeenCalledWith(
+			path,
+			expect.any(String),
+			"utf-8",
+		);
 	});
 
 	test("returns validated project config when file exists", () => {

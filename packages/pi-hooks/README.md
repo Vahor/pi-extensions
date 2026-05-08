@@ -27,7 +27,7 @@ Configuration is loaded from both locations and merged recursively:
 | `~/.pi/agent/hooks.json` | Global hooks |
 | `.pi/hooks.json` | Project hooks; overrides global values |
 
-If neither file exists, the extension shows a warning on session start and stays disabled.
+If neither file exists, the extension creates `.pi/hooks.json` with an empty config and a `$schema` field for editor validation.
 
 Each entry can be a string (just the command) or an object:
 
