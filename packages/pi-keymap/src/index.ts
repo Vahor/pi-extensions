@@ -116,6 +116,9 @@ async function runPrompt(
 	if (entry.prompt === undefined) return;
 
 	if (entry.open === false) {
+		if (entry.send) {
+			pi.sendUserMessage(entry.prompt);
+		}
 		ctx.ui.setEditorText(entry.prompt);
 		return;
 	}
