@@ -1,5 +1,11 @@
 # @vahor/pi-hooks
 
+## 0.0.8
+
+### Patch Changes
+
+- [#10](https://github.com/Vahor/pi-extensions/pull/10) [`0d2bc35`](https://github.com/Vahor/pi-extensions/commit/0d2bc354343f7ca68f6e2d33c452bc307bc38300) Thanks [@Vahor](https://github.com/Vahor)! - Add generated JSON Schema specs for extension config files and create empty project config files with `$schema` when missing.
+
 ## 0.0.7
 
 ### Patch Changes
