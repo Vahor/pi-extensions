@@ -45,12 +45,16 @@ function startCommandSpinner(
 	ctx: ExtensionContext,
 	command: string,
 	index: number,
+	silent: boolean,
 ): () => void {
 	if (!ctx.hasUI) return () => {};
 
 	const statusKey = `runner:${index}`;
 	const theme = ctx.ui.theme;
-	const text = `${theme.fg("dim", `[${index}] `)}${theme.fg("bashMode", formatCommand(command))}`;
+	const displayCommand = silent
+		? `${formatCommand(command)} (silent)`
+		: formatCommand(command);
+	const text = `${theme.fg("dim", `[${index}] `)}${theme.fg("bashMode", displayCommand)}`;
 	let frameIndex = 0;
 
 	const render = (): void => {
@@ -209,7 +213,7 @@ export async function runCommands(
 
 		const stopSpinner = interactive
 			? () => {}
-			: startCommandSpinner(ctx, command, index);
+			: startCommandSpinner(ctx, command, index, !print);
 
 		try {
 			const result = interactive
