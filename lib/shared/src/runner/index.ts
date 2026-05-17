@@ -110,25 +110,63 @@ async function runInteractiveCommand(
 	});
 }
 
+function formatContextMessage(
+	command: string,
+	cwd: string,
+	stdout: string,
+	stderr: string,
+	code: number,
+): string {
+	const sections = [`Ran \`${command}\``, `Working directory: \`${cwd}\``];
+
+	if (stdout) {
+		sections.push(`stdout:\n\`\`\`\n${stdout}\n\`\`\``);
+	}
+	if (stderr) {
+		sections.push(`stderr:\n\`\`\`\n${stderr}\n\`\`\``);
+	}
+	if (!stdout && !stderr) {
+		sections.push("(no output)");
+	}
+	if (code !== 0) {
+		sections.push(`Command exited with code ${code}.`);
+	}
+
+	return sections.join("\n\n");
+}
+
 function handleCommandResult(
 	pi: ExtensionAPI,
 	ctx: ExtensionContext,
 	options: {
 		command: string;
+		cwd: string;
 		print: boolean;
 		context: boolean | undefined;
 		result: CommandResult;
 	},
 ): void {
-	const { command, print, context, result } = options;
+	const { command, cwd, print, context, result } = options;
 
 	if (print || context) {
-		renderCommandResult(pi, ctx, {
-			command,
-			code: result.code,
-			output: buildRenderedOutput(result),
-			includeInContext: context === true,
-		});
+		renderCommandResult(
+			pi,
+			ctx,
+			{
+				command,
+				cwd,
+				code: result.code,
+				output: buildRenderedOutput(result),
+				includeInContext: context === true,
+			},
+			formatContextMessage(
+				command,
+				cwd,
+				result.stdout,
+				result.stderr,
+				result.code,
+			),
+		);
 	}
 }
 
@@ -165,6 +203,7 @@ export async function runCommands(
 
 			handleCommandResult(pi, ctx, {
 				command,
+				cwd: resolvedCwd,
 				print,
 				context,
 				result,
@@ -173,6 +212,7 @@ export async function runCommands(
 			const message = err instanceof Error ? err.message : String(err);
 			handleCommandResult(pi, ctx, {
 				command,
+				cwd: resolvedCwd,
 				print: true,
 				context,
 				result: { code: 1, stdout: "", stderr: message },

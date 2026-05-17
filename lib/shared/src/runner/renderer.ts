@@ -18,6 +18,7 @@ export interface CommandOutputForRender {
 
 export interface CommandRenderDetails {
 	command: string;
+	cwd: string;
 	code: number;
 	output: string;
 	includeInContext: boolean;
@@ -72,17 +73,47 @@ export function registerCommandRenderer(pi: ExtensionAPI): void {
 	);
 }
 
+function formatContextMessage(
+	command: string,
+	cwd: string,
+	stdout: string,
+	stderr: string,
+	code: number,
+): string {
+	const sections = [`Ran \`${command}\``, `Working directory: \`${cwd}\``];
+
+	if (stdout) {
+		sections.push(`stdout:\n\`\`\`\n${stdout}\n\`\`\``);
+	}
+	if (stderr) {
+		sections.push(`stderr:\n\`\`\`\n${stderr}\n\`\`\``);
+	}
+	if (!stdout && !stderr) {
+		sections.push("(no output)");
+	}
+	if (code !== 0) {
+		sections.push(`Command exited with code ${code}.`);
+	}
+
+	return sections.join("\n\n");
+}
+
 export function renderCommandResult(
 	pi: ExtensionAPI,
 	ctx: ExtensionContext,
 	details: CommandRenderDetails,
-	contextMessage?: string,
 ): void {
 	if (!ctx.hasUI && !details.includeInContext) return;
 
 	pi.sendMessage({
 		customType: runnerCommandMessageType,
-		content: contextMessage ?? "",
+		content: formatContextMessage(
+			details.command,
+			details.cwd,
+			details.output,
+			"",
+			details.code,
+		),
 		display: ctx.hasUI,
 		details,
 	});
