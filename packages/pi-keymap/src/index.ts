@@ -4,7 +4,7 @@ import type {
 } from "@earendil-works/pi-coding-agent";
 import { type KeyId, matchesKey } from "@earendil-works/pi-tui";
 import { FileNotFoundError, readConfig } from "@vahor/shared/config";
-import { runCommands } from "@vahor/shared/runner";
+import { registerCommandRenderer, runCommands } from "@vahor/shared/runner";
 import { buildTrie, type TrieNode } from "@vahor/shared/trie";
 import { Effect } from "effect";
 import type { KeymapEntry, KeymapsConfig } from "./config.js";
@@ -155,6 +155,8 @@ async function runEntry(
 }
 
 export default function (pi: ExtensionAPI) {
+	registerCommandRenderer(pi);
+
 	pi.on("session_start", (_event, ctx) => {
 		const cwd = process.cwd();
 		const config = loadConfig(cwd);

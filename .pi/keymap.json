@@ -11,7 +11,8 @@
 			"commands": ["sleep 1 && echo 'hello'"],
 			"description": "Hello World",
 			"print": true,
-			"interactive": true
+			"interactive": false,
+			"context": false
 		},
 		{
 			"key": "<leader>p",

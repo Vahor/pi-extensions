@@ -1,6 +1,6 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { FileNotFoundError, readConfig } from "@vahor/shared/config";
-import { runCommands } from "@vahor/shared/runner";
+import { registerCommandRenderer, runCommands } from "@vahor/shared/runner";
 import { Effect } from "effect";
 import type { CommandHooksConfig } from "./config.js";
 import {
@@ -23,6 +23,7 @@ function loadConfig(cwd: string): CommandHooksConfig | undefined {
 }
 
 export default function (pi: ExtensionAPI) {
+	registerCommandRenderer(pi);
 	const cwd = process.cwd();
 	const config = loadConfig(cwd);
 
