@@ -66,6 +66,45 @@ const NAMED_KEYS = new Set([
 ]);
 
 const VALID_MODIFIERS = new Set(["ctrl", "shift", "alt", "super"]);
+const SHIFT_PREFIX = "shift+";
+
+function isLowercaseLetter(value: string | undefined): value is string {
+	if (value === undefined) return false;
+	const code = value.charCodeAt(0);
+	return code >= 97 && code <= 122;
+}
+
+export function parseLeaderKeySegments(key: string): string[] {
+	const segments: string[] = [];
+
+	for (let i = 0; i < key.length; ) {
+		const shiftedLetterIndex = i + SHIFT_PREFIX.length;
+		const shiftedLetter = key[shiftedLetterIndex];
+		if (key.startsWith(SHIFT_PREFIX, i) && isLowercaseLetter(shiftedLetter)) {
+			segments.push(`${SHIFT_PREFIX}${shiftedLetter}`);
+			i = shiftedLetterIndex + 1;
+			continue;
+		}
+
+		const segment = key[i];
+		if (segment !== undefined) segments.push(segment);
+		i++;
+	}
+
+	return segments;
+}
+
+export function formatLeaderKeySegment(segment: string): string {
+	if (segment.length !== SHIFT_PREFIX.length + 1) return segment;
+	if (!segment.startsWith(SHIFT_PREFIX)) return segment;
+
+	const letter = segment[SHIFT_PREFIX.length];
+	return isLowercaseLetter(letter) ? letter.toUpperCase() : segment;
+}
+
+export function formatLeaderKeyPath(path: string): string {
+	return parseLeaderKeySegments(path).map(formatLeaderKeySegment).join("");
+}
 
 /**
  * Check if a key string is a valid KeyId.

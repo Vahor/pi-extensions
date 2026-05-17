@@ -4,6 +4,9 @@ import type {
 	ExtensionAPI,
 	ExtensionContext,
 } from "@earendil-works/pi-coding-agent";
+import { buildRenderedOutput, renderCommandResult } from "./renderer.js";
+
+export { registerCommandRenderer } from "./renderer.js";
 
 export interface CommandEntry {
 	command: string;
@@ -21,64 +24,37 @@ interface CommandResult {
 	stdout: string;
 	stderr: string;
 	code: number;
-	notifyOutput?: string;
+}
+
+const MAX_CONTEXT_OUTPUT_LENGTH = 20_000;
+
+function truncateOutput(output: string): string {
+	if (output.length <= MAX_CONTEXT_OUTPUT_LENGTH) return output;
+
+	const truncationNote = `…\n[output truncated to ${MAX_CONTEXT_OUTPUT_LENGTH} characters; showing tail]\n`;
+	return `${truncationNote}${output.slice(
+		-(MAX_CONTEXT_OUTPUT_LENGTH - truncationNote.length),
+	)}`;
 }
 
 function formatCommand(command: string): string {
 	return command.length > 60 ? `${command.slice(0, 57)}...` : command;
 }
 
-function formatContextMessage(
-	command: string,
-	cwd: string,
-	stdout: string,
-	stderr: string,
-	code: number,
-): string {
-	const sections = [`Ran \`${command}\``, `Working directory: \`${cwd}\``];
-
-	if (stdout) {
-		sections.push(`stdout:\n\`\`\`\n${stdout}\n\`\`\``);
-	}
-	if (stderr) {
-		sections.push(`stderr:\n\`\`\`\n${stderr}\n\`\`\``);
-	}
-	if (!stdout && !stderr) {
-		sections.push("(no output)");
-	}
-	if (code !== 0) {
-		sections.push(`Command exited with code ${code}.`);
-	}
-
-	return sections.join("\n\n");
-}
-
-function sendCommandContext(
-	pi: ExtensionAPI,
-	command: string,
-	cwd: string,
-	stdout: string,
-	stderr: string,
-	code: number,
-): void {
-	pi.sendMessage({
-		customType: "command-context",
-		content: formatContextMessage(command, cwd, stdout, stderr, code),
-		display: true,
-		details: { command, cwd, stdout, stderr, code },
-	});
-}
-
 function startCommandSpinner(
 	ctx: ExtensionContext,
 	command: string,
 	index: number,
+	silent: boolean,
 ): () => void {
 	if (!ctx.hasUI) return () => {};
 
 	const statusKey = `runner:${index}`;
 	const theme = ctx.ui.theme;
-	const text = `${theme.fg("dim", `[${index}] `)}${theme.fg("bashMode", formatCommand(command))}`;
+	const displayCommand = silent
+		? `${formatCommand(command)} (silent)`
+		: formatCommand(command);
+	const text = `${theme.fg("dim", `[${index}] `)}${theme.fg("bashMode", displayCommand)}`;
 	let frameIndex = 0;
 
 	const render = (): void => {
@@ -107,7 +83,6 @@ async function runInteractiveCommand(
 			stdout: "",
 			stderr: message,
 			code: 1,
-			notifyOutput: message,
 		};
 	}
 
@@ -115,16 +90,14 @@ async function runInteractiveCommand(
 		const shell = process.env.SHELL || "/bin/sh";
 		let completed = false;
 
-		const finish = (result: Omit<CommandResult, "stdout" | "stderr">): void => {
+		const finish = (result: CommandResult): void => {
 			if (completed) return;
 			completed = true;
 			tui.start();
 			tui.requestRender(true);
 			done({
-				stdout: "",
-				stderr:
-					result.notifyOutput || "interactive command output is not captured",
 				...result,
+				stderr: result.stderr || "interactive command output is not captured",
 			});
 		};
 
@@ -137,18 +110,46 @@ async function runInteractiveCommand(
 		});
 
 		child.on("error", (error) => {
-			finish({ code: 1, notifyOutput: error.message });
+			finish({ code: 1, stderr: error.message, stdout: "" });
 		});
 		child.on("exit", (code, signal) => {
 			const message = signal ? `terminated by ${signal}` : undefined;
 			finish({
 				code: code ?? (signal ? 1 : 0),
-				notifyOutput: message ?? "",
+				stderr: message ?? "",
+				stdout: "",
 			});
 		});
 
 		return { render: () => [], invalidate: () => {} };
 	});
+}
+
+function formatContextMessage(
+	command: string,
+	cwd: string,
+	stdout: string,
+	stderr: string,
+	code: number,
+): string {
+	const sections = [`Ran \`${command}\``, `Working directory: \`${cwd}\``];
+	const truncatedStdout = truncateOutput(stdout);
+	const truncatedStderr = truncateOutput(stderr);
+
+	if (stdout) {
+		sections.push(`stdout:\n\`\`\`\n${truncatedStdout}\n\`\`\``);
+	}
+	if (stderr) {
+		sections.push(`stderr:\n\`\`\`\n${truncatedStderr}\n\`\`\``);
+	}
+	if (!stdout && !stderr) {
+		sections.push("(no output)");
+	}
+	if (code !== 0) {
+		sections.push(`Command exited with code ${code}.`);
+	}
+
+	return sections.join("\n\n");
 }
 
 function handleCommandResult(
@@ -157,40 +158,36 @@ function handleCommandResult(
 	options: {
 		command: string;
 		cwd: string;
-		notifyLabel: string;
 		print: boolean;
 		context: boolean | undefined;
-		successVerb: string;
 		result: CommandResult;
 	},
 ): void {
-	const { command, cwd, notifyLabel, print, context, successVerb, result } =
-		options;
-	const output = (
-		result.notifyOutput ??
-		(result.stderr.toString().trim() || result.stdout.toString().trim())
-	).slice(0, 400);
+	const { command, cwd, print, context, result } = options;
 
-	if (context) {
-		sendCommandContext(
+	if (print || context) {
+		const content =
+			context === true
+				? formatContextMessage(
+						command,
+						cwd,
+						result.stdout,
+						result.stderr,
+						result.code,
+					)
+				: "";
+		renderCommandResult(
 			pi,
-			command,
-			cwd,
-			result.stdout.trim(),
-			result.stderr.trim(),
-			result.code,
-		);
-	}
-
-	if (result.code !== 0) {
-		ctx.ui.notify(
-			`${notifyLabel} "${command}" failed (exit ${result.code})${output ? `:\n  ↳ ${output}` : ""}`,
-			"error",
-		);
-	} else if (print) {
-		ctx.ui.notify(
-			`${notifyLabel} "${command}" ${successVerb}${output ? `:\n  ↳ ${output}` : ""}`,
-			"info",
+			ctx,
+			{
+				command,
+				cwd,
+				code: result.code,
+				output: buildRenderedOutput(result),
+				includeInContext: context === true,
+				silent: !print,
+			},
+			{ content, display: print },
 		);
 	}
 }
@@ -200,7 +197,7 @@ export async function runCommands(
 	cwd: string,
 	pi: ExtensionAPI,
 	ctx: ExtensionContext,
-	label: string,
+	_label: string,
 ): Promise<void> {
 	for (const {
 		command,
@@ -211,13 +208,12 @@ export async function runCommands(
 		interactive,
 	} of commands) {
 		const index = ++spinnerId;
-		const notifyLabel = `[${index}] ${label}`;
 		const resolvedCwd = commandCwd ? resolve(cwd, commandCwd) : cwd;
 		const shell = process.env.SHELL || "/bin/sh";
 
 		const stopSpinner = interactive
 			? () => {}
-			: startCommandSpinner(ctx, command, index);
+			: startCommandSpinner(ctx, command, index, !print);
 
 		try {
 			const result = interactive
@@ -230,18 +226,19 @@ export async function runCommands(
 			handleCommandResult(pi, ctx, {
 				command,
 				cwd: resolvedCwd,
-				notifyLabel,
 				print,
 				context,
-				successVerb: interactive ? "completed" : "succeeded",
 				result,
 			});
 		} catch (err) {
 			const message = err instanceof Error ? err.message : String(err);
-			if (context) {
-				sendCommandContext(pi, command, resolvedCwd, "", message, 1);
-			}
-			ctx.ui.notify(`${notifyLabel} "${command}" error: ${message}`, "error");
+			handleCommandResult(pi, ctx, {
+				command,
+				cwd: resolvedCwd,
+				print,
+				context,
+				result: { code: 1, stdout: "", stderr: message },
+			});
 		} finally {
 			stopSpinner();
 		}

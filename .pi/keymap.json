@@ -7,11 +7,36 @@
 			"description": "Fail"
 		},
 		{
+			"key": "<leader>shift+h",
+			"commands": ["sleep 1 && echo 'hello'"],
+			"description": "Hello World",
+			"print": true,
+			"interactive": false,
+			"context": true
+		},
+		{
 			"key": "<leader>h",
 			"commands": ["sleep 1 && echo 'hello'"],
 			"description": "Hello World",
 			"print": true,
-			"interactive": true
+			"interactive": false,
+			"context": false
+		},
+		{
+			"key": "<leader>shift+j",
+			"commands": ["sleep 1 && echo 'hello'"],
+			"description": "Hello World",
+			"print": false,
+			"interactive": false,
+			"context": true
+		},
+		{
+			"key": "<leader>j",
+			"commands": ["sleep 1 && echo 'hello'"],
+			"description": "Hello World",
+			"print": false,
+			"interactive": false,
+			"context": false
 		},
 		{
 			"key": "<leader>p",
@@ -27,12 +52,6 @@
 			"description": "Status",
 			"print": true,
 			"context": true
-		},
-		{
-			"key": "<leader>gg",
-			"commands": ["lazygit"],
-			"description": "Open LazyGit",
-			"interactive": true
 		}
 	]
 }

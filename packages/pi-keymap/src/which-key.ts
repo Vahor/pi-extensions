@@ -5,10 +5,14 @@ import {
 	truncateToWidth,
 	visibleWidth,
 } from "@earendil-works/pi-tui";
+import { formatLeaderKeySegment } from "./keys.js";
 export interface LeaderEntry {
 	key: string;
 	label: string;
 	hasAction: boolean;
+	context: boolean;
+	interactive: boolean;
+	silent?: boolean;
 }
 
 /**
@@ -123,13 +127,42 @@ export class WhichKeyOverlay {
 
 	private formatEntry(entry: LeaderEntry, colWidth: number, th: Theme): string {
 		const isPrefix = !entry.hasAction;
-		const keyColor = isPrefix
-			? th.fg("warning", entry.key.padEnd(6))
-			: th.fg("accent", entry.key.padEnd(6));
-		const label = isPrefix ? th.fg("dim", `+${entry.label}`) : entry.label;
-		const truncated = truncateToWidth(label, colWidth - 7, "...", true);
-		const padding = Math.max(0, colWidth - 7 - visibleWidth(truncated));
-		return keyColor + truncated + " ".repeat(padding);
+		const keyText = formatLeaderKeySegment(entry.key).padEnd(6);
+		const keyColor = this.formatKey(entry, isPrefix, keyText, th);
+		const indicators = isPrefix ? "" : this.formatIndicators(entry);
+		const label = this.formatLabel(entry, isPrefix, th);
+		const labelWidth = Math.max(0, colWidth - 7 - visibleWidth(indicators));
+		const truncated = truncateToWidth(label, labelWidth, "...", true);
+		const padding = Math.max(0, labelWidth - visibleWidth(truncated));
+		return keyColor + indicators + truncated + " ".repeat(padding);
+	}
+
+	private formatKey(
+		entry: LeaderEntry,
+		isPrefix: boolean,
+		keyText: string,
+		th: Theme,
+	): string {
+		const styled = th.fg(isPrefix ? "warning" : "accent", keyText);
+		if (isPrefix) return styled;
+		if (!entry.silent) {
+			return th.bold(styled);
+		}
+		return styled;
+	}
+
+	private formatIndicators(entry: LeaderEntry): string {
+		return entry.interactive ? "$ " : entry.context ? "# " : "  ";
+	}
+
+	private formatLabel(
+		entry: LeaderEntry,
+		isPrefix: boolean,
+		th: Theme,
+	): string {
+		return isPrefix
+			? th.fg("customMessageLabel", `+${entry.label}`)
+			: th.fg("syntaxString", entry.label);
 	}
 
 	invalidate(): void {}

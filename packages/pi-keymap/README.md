@@ -71,8 +71,6 @@ If neither file exists, the extension creates `.pi/keymap.json` with an empty co
 
 `commands`, `prompt`, and grouping entries are mutually exclusive shapes: use `commands` for shell commands, `prompt` for prompt drafts, or neither for a leader grouping node. `print`, `context`, and `interactive` can be overridden at command level. Command-level wins over keymap-level.
 
-For prompt keymaps, `:q!` in vim cancels without changing the pi input. `:wq` saves; with `send: true` the saved content is sent immediately, otherwise it is inserted into the input editor. For now, prompt keymaps open `vim` directly.
-
 ### Key format
 
 `modifier+key` where modifiers are `ctrl`, `shift`, `alt`, `super` (e.g. `ctrl+shift+p`, `alt+x`).
@@ -110,3 +108,14 @@ Errors show as UI notifications with exit code and truncated output. Interactive
 Press the configured `leader` key to open a full-width bottom overlay listing all leader-prefixed keymaps. The overlay only opens when the input editor is empty, so typing a space (if your leader is `space`) won't accidentally trigger it. Press the sub-key to run the mapping, or `escape` to dismiss. The overlay auto-closes after 5 seconds.
 
 Leader keys can be nested: `<leader>g` shows a sub-overlay with its children (`gp` → `git push`, `gpf` → `git push --force`). Prefix-only nodes (no `commands`, just a `description`) act as grouping folders.
+
+Which-key entry styles:
+
+| Mapping state | Style |
+|---------------|-------|
+| Default command | Accent key, bold when output is printed |
+| `print: false` | Accent key, normal weight |
+| `context: true` | Prefixed with `#` |
+| `interactive: true` | Prefixed with `$` |
+| Prefix/group node | Warning key + purple `+` label |
+| Labels | Purple for groups, soft orange for actions |

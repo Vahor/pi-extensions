@@ -1,6 +1,7 @@
 import type { ExtensionContext } from "@earendil-works/pi-coding-agent";
 import { flattenTrieChildren, type TrieNode } from "@vahor/shared/trie";
 import type { KeymapEntry } from "./config.js";
+import { formatLeaderKeyPath } from "./keys.js";
 import { type LeaderEntry, WhichKeyOverlay } from "./which-key.js";
 
 type LeaderAction =
@@ -34,10 +35,17 @@ export function showLevel(options: ShowLevelOptions): void {
 		key: c.key,
 		label: c.payload ? getEntryLabel(c.payload) : "",
 		hasAction: c.payload ? hasAction(c.payload) : false,
+		context:
+			c.payload?.commands?.some((command) => command.context === true) ?? false,
+		interactive:
+			c.payload?.commands?.some((command) => command.interactive === true) ??
+			false,
+		silent:
+			c.payload?.commands?.every((command) => command.print === false) ?? false,
 	}));
 
 	const displayPrefix = prefixPath
-		? `<${leaderKey}>${prefixPath}`
+		? `<${leaderKey}>${formatLeaderKeyPath(prefixPath)}`
 		: `<${leaderKey}>`;
 
 	void ctx.ui
@@ -60,7 +68,7 @@ export function showLevel(options: ShowLevelOptions): void {
 							done({
 								type: "run",
 								entry: payload,
-								label: `keymap <leader>${prefixPath}${child.key}`,
+								label: `keymap <leader>${formatLeaderKeyPath(`${prefixPath}${child.key}`)}`,
 							});
 						} else {
 							done(undefined);
