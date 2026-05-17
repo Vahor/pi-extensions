@@ -27,12 +27,6 @@
 			"description": "Status",
 			"print": true,
 			"context": true
-		},
-		{
-			"key": "<leader>gg",
-			"commands": ["lazygit"],
-			"description": "Open LazyGit",
-			"interactive": true
 		}
 	]
 }
