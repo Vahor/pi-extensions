@@ -7,12 +7,20 @@
 			"description": "Fail"
 		},
 		{
+			"key": "<leader>shift+h",
+			"commands": ["sleep 1 && echo 'hello'"],
+			"description": "Hello World",
+			"print": false,
+			"interactive": false,
+			"context": false
+		},
+		{
 			"key": "<leader>h",
 			"commands": ["sleep 1 && echo 'hello'"],
 			"description": "Hello World",
 			"print": true,
 			"interactive": false,
-			"context": false
+			"context": true
 		},
 		{
 			"key": "<leader>p",

@@ -9,6 +9,8 @@ export interface LeaderEntry {
 	key: string;
 	label: string;
 	hasAction: boolean;
+	context: boolean;
+	interactive: boolean;
 }
 
 /**
@@ -123,13 +125,17 @@ export class WhichKeyOverlay {
 
 	private formatEntry(entry: LeaderEntry, colWidth: number, th: Theme): string {
 		const isPrefix = !entry.hasAction;
+		const keyText = entry.key.padEnd(6);
 		const keyColor = isPrefix
-			? th.fg("warning", entry.key.padEnd(6))
-			: th.fg("accent", entry.key.padEnd(6));
+			? th.fg("warning", keyText)
+			: th.fg(entry.context ? "success" : "accent", keyText);
+		const marker = entry.interactive ? th.fg("bashMode", "$ ") : "";
+		const markerWidth = entry.interactive ? 2 : 0;
 		const label = isPrefix ? th.fg("dim", `+${entry.label}`) : entry.label;
-		const truncated = truncateToWidth(label, colWidth - 7, "...", true);
-		const padding = Math.max(0, colWidth - 7 - visibleWidth(truncated));
-		return keyColor + truncated + " ".repeat(padding);
+		const labelWidth = Math.max(0, colWidth - 7 - markerWidth);
+		const truncated = truncateToWidth(label, labelWidth, "...", true);
+		const padding = Math.max(0, labelWidth - visibleWidth(truncated));
+		return keyColor + marker + truncated + " ".repeat(padding);
 	}
 
 	invalidate(): void {}
