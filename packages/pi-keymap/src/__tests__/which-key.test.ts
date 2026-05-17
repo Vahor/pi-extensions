@@ -140,6 +140,7 @@ describe("flattenTrieChildren", () => {
 describe("WhichKeyOverlay", () => {
 	const plainTheme = {
 		fg: (_color: string, text: string) => text,
+		bold: (text: string) => text,
 	} as unknown as Theme;
 
 	test("displays shift+letter segments as uppercase letters", () => {
@@ -161,7 +162,7 @@ describe("WhichKeyOverlay", () => {
 
 		try {
 			const text = overlay.render(40).join("\n");
-			expect(text).toContain("H     Help");
+			expect(text).toContain("H       Help");
 			expect(text).not.toContain("shift+h");
 		} finally {
 			overlay.dispose();
