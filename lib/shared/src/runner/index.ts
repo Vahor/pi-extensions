@@ -26,6 +26,17 @@ interface CommandResult {
 	code: number;
 }
 
+const MAX_CONTEXT_OUTPUT_LENGTH = 20_000;
+
+function truncateOutput(output: string): string {
+	if (output.length <= MAX_CONTEXT_OUTPUT_LENGTH) return output;
+
+	const truncationNote = `…\n[output truncated to ${MAX_CONTEXT_OUTPUT_LENGTH} characters; showing tail]\n`;
+	return `${truncationNote}${output.slice(
+		-(MAX_CONTEXT_OUTPUT_LENGTH - truncationNote.length),
+	)}`;
+}
+
 function formatCommand(command: string): string {
 	return command.length > 60 ? `${command.slice(0, 57)}...` : command;
 }
@@ -118,12 +129,14 @@ function formatContextMessage(
 	code: number,
 ): string {
 	const sections = [`Ran \`${command}\``, `Working directory: \`${cwd}\``];
+	const truncatedStdout = truncateOutput(stdout);
+	const truncatedStderr = truncateOutput(stderr);
 
 	if (stdout) {
-		sections.push(`stdout:\n\`\`\`\n${stdout}\n\`\`\``);
+		sections.push(`stdout:\n\`\`\`\n${truncatedStdout}\n\`\`\``);
 	}
 	if (stderr) {
-		sections.push(`stderr:\n\`\`\`\n${stderr}\n\`\`\``);
+		sections.push(`stderr:\n\`\`\`\n${truncatedStderr}\n\`\`\``);
 	}
 	if (!stdout && !stderr) {
 		sections.push("(no output)");
