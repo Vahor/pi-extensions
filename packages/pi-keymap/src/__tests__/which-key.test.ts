@@ -1,6 +1,9 @@
 import { describe, expect, test } from "bun:test";
+import type { Theme } from "@earendil-works/pi-coding-agent";
 import { buildTrie, flattenTrieChildren } from "@vahor/shared/trie";
 import type { KeymapCommand } from "../config.js";
+import { parseLeaderKeySegments } from "../keys.js";
+import { WhichKeyOverlay } from "../which-key.js";
 
 type Payload = KeymapCommand[];
 
@@ -30,6 +33,22 @@ describe("trie (leader keymaps)", () => {
 		expect(t?.children.size).toBe(2);
 		expect(t?.children.get("a")?.payload?.[0].command).toBe("bun test");
 		expect(t?.children.get("b")?.payload?.[0].command).toBe("bun run build");
+	});
+
+	test("keeps shift+letter as one leader segment", () => {
+		const { root, conflicts } = buildTrie<Payload>([
+			{
+				key: "shift+h",
+				segments: parseLeaderKeySegments("shift+h"),
+				payload: [{ command: "echo help" }],
+			},
+		]);
+
+		expect(conflicts).toEqual([]);
+		expect(root.children.has("s")).toBe(false);
+		expect(root.children.get("shift+h")?.payload?.[0].command).toBe(
+			"echo help",
+		);
 	});
 
 	test("allows prefix node to have its own commands alongside children", () => {
@@ -78,6 +97,22 @@ describe("trie (leader keymaps)", () => {
 	});
 });
 
+describe("parseLeaderKeySegments", () => {
+	test("parses shift+letter as one segment only for letters", () => {
+		expect(parseLeaderKeySegments("shift+h")).toEqual(["shift+h"]);
+		expect(parseLeaderKeySegments("gshift+h")).toEqual(["g", "shift+h"]);
+		expect(parseLeaderKeySegments("shift+1")).toEqual([
+			"s",
+			"h",
+			"i",
+			"f",
+			"t",
+			"+",
+			"1",
+		]);
+	});
+});
+
 describe("flattenTrieChildren", () => {
 	test("flattens with payloads", () => {
 		const { root } = buildTrie<Payload>([
@@ -99,5 +134,37 @@ describe("flattenTrieChildren", () => {
 		expect(items).toHaveLength(1);
 		expect(items[0]?.key).toBe("t");
 		expect(items[0]?.payload).toBeUndefined();
+	});
+});
+
+describe("WhichKeyOverlay", () => {
+	const plainTheme = {
+		fg: (_color: string, text: string) => text,
+	} as unknown as Theme;
+
+	test("displays shift+letter segments as uppercase letters", () => {
+		const overlay = new WhichKeyOverlay(
+			plainTheme,
+			[
+				{
+					key: "shift+h",
+					label: "Help",
+					hasAction: true,
+					context: false,
+					interactive: false,
+				},
+			],
+			() => {},
+			() => {},
+			"<space>",
+		);
+
+		try {
+			const text = overlay.render(40).join("\n");
+			expect(text).toContain("H     Help");
+			expect(text).not.toContain("shift+h");
+		} finally {
+			overlay.dispose();
+		}
 	});
 });

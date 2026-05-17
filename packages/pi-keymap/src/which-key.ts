@@ -5,6 +5,7 @@ import {
 	truncateToWidth,
 	visibleWidth,
 } from "@earendil-works/pi-tui";
+import { formatLeaderKeySegment } from "./keys.js";
 export interface LeaderEntry {
 	key: string;
 	label: string;
@@ -125,7 +126,7 @@ export class WhichKeyOverlay {
 
 	private formatEntry(entry: LeaderEntry, colWidth: number, th: Theme): string {
 		const isPrefix = !entry.hasAction;
-		const keyText = entry.key.padEnd(6);
+		const keyText = formatLeaderKeySegment(entry.key).padEnd(6);
 		const keyColor = isPrefix
 			? th.fg("warning", keyText)
 			: th.fg(entry.context ? "success" : "accent", keyText);

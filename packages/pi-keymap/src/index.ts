@@ -9,7 +9,7 @@ import { buildTrie, type TrieNode } from "@vahor/shared/trie";
 import { Effect } from "effect";
 import type { KeymapEntry, KeymapsConfig } from "./config.js";
 import { EmptyKeymapsConfig, KeymapsConfigSchema } from "./config.js";
-import { isValidKey } from "./keys.js";
+import { isValidKey, parseLeaderKeySegments } from "./keys.js";
 import { showLevel } from "./ui.js";
 
 function loadConfig(cwd: string): KeymapsConfig | undefined {
@@ -63,10 +63,10 @@ function validateKeymaps(
 			direct.push(km);
 		} else {
 			let invalid = false;
-			for (const ch of km.leaderKey) {
-				if (!isValidKey(ch)) {
+			for (const segment of parseLeaderKeySegments(km.leaderKey)) {
+				if (!isValidKey(segment)) {
 					ctx.ui.notify(
-						`keymap: leader sub-key "${ch}" in "<leader>${km.leaderKey}" is invalid`,
+						`keymap: leader sub-key "${segment}" in "<leader>${km.leaderKey}" is invalid`,
 						"warning",
 					);
 					invalid = true;
@@ -178,7 +178,11 @@ export default function (pi: ExtensionAPI) {
 		const { direct, leader } = validateKeymaps(config.keymaps, ctx);
 
 		const { root, conflicts } = buildTrie<KeymapEntry>(
-			leader.map((k) => ({ key: k.leaderKey, payload: k })),
+			leader.map((k) => ({
+				key: k.leaderKey,
+				segments: parseLeaderKeySegments(k.leaderKey),
+				payload: k,
+			})),
 		);
 
 		warnDeadEnds(root, "<leader>", ctx);

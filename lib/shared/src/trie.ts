@@ -4,16 +4,17 @@
  */
 
 export interface TrieNode<T> {
-	/** Short display key for this segment (single char for leader keys) */
+	/** Short display key for this segment */
 	segment: string;
 	/** Optional payload at this node (undefined = pure prefix, has value = leaf or combined) */
 	payload?: T;
 	children: Map<string, TrieNode<T>>;
 }
 
-/** A sequence entry: key string split into segments + payload */
+/** A sequence entry: key string, optional parsed segments, and payload */
 export interface TrieEntry<T> {
 	key: string;
+	segments?: readonly string[];
 	payload: T;
 }
 
@@ -21,7 +22,8 @@ export interface TrieEntry<T> {
  * Build a trie from entries, detecting conflicts where the same key path
  * already has a payload.
  *
- * Each entry's `key` is split into individual characters as segments.
+ * Each entry's `key` is split into individual characters as segments unless
+ * `segments` is provided.
  * Last-write-wins for conflicts, but conflicts are reported.
  *
  * @returns the root node and a list of conflict messages
@@ -35,7 +37,7 @@ export function buildTrie<T>(entries: TrieEntry<T>[]): {
 
 	for (const entry of entries) {
 		let node = root;
-		const segments = [...entry.key];
+		const segments = entry.segments ?? [...entry.key];
 
 		for (let i = 0; i < segments.length; i++) {
 			const seg = segments[i];
