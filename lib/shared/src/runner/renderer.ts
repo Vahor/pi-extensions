@@ -73,31 +73,6 @@ export function registerCommandRenderer(pi: ExtensionAPI): void {
 	);
 }
 
-function formatContextMessage(
-	command: string,
-	cwd: string,
-	stdout: string,
-	stderr: string,
-	code: number,
-): string {
-	const sections = [`Ran \`${command}\``, `Working directory: \`${cwd}\``];
-
-	if (stdout) {
-		sections.push(`stdout:\n\`\`\`\n${stdout}\n\`\`\``);
-	}
-	if (stderr) {
-		sections.push(`stderr:\n\`\`\`\n${stderr}\n\`\`\``);
-	}
-	if (!stdout && !stderr) {
-		sections.push("(no output)");
-	}
-	if (code !== 0) {
-		sections.push(`Command exited with code ${code}.`);
-	}
-
-	return sections.join("\n\n");
-}
-
 export function renderCommandResult(
 	pi: ExtensionAPI,
 	ctx: ExtensionContext,
@@ -107,13 +82,7 @@ export function renderCommandResult(
 
 	pi.sendMessage({
 		customType: runnerCommandMessageType,
-		content: formatContextMessage(
-			details.command,
-			details.cwd,
-			details.output,
-			"",
-			details.code,
-		),
+		content: "",
 		display: ctx.hasUI,
 		details,
 	});

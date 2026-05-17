@@ -149,6 +149,16 @@ function handleCommandResult(
 	const { command, cwd, print, context, result } = options;
 
 	if (print || context) {
+		const contextMessage =
+			context === true
+				? undefined
+				: formatContextMessage(
+						command,
+						cwd,
+						result.stdout,
+						result.stderr,
+						result.code,
+					);
 		renderCommandResult(
 			pi,
 			ctx,
@@ -159,13 +169,7 @@ function handleCommandResult(
 				output: buildRenderedOutput(result),
 				includeInContext: context === true,
 			},
-			formatContextMessage(
-				command,
-				cwd,
-				result.stdout,
-				result.stderr,
-				result.code,
-			),
+			contextMessage,
 		);
 	}
 }
