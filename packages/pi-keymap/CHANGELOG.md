@@ -1,5 +1,11 @@
 # @vahor/pi-keymap
 
+## 0.0.9
+
+### Patch Changes
+
+- [#12](https://github.com/Vahor/pi-extensions/pull/12) [`8dc1fd2`](https://github.com/Vahor/pi-extensions/commit/8dc1fd25b2ca7c9c0236bc042d65b4eae3d0a4d0) Thanks [@Vahor](https://github.com/Vahor)! - Merge global and project keymaps by key so project configs can override or add mappings without replacing the full global keymap list.
+
 ## 0.0.8
 
 ### Patch Changes
