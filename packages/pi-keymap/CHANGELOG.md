@@ -1,5 +1,11 @@
 # @vahor/pi-keymap
 
+## 0.0.12
+
+### Patch Changes
+
+- [#17](https://github.com/Vahor/pi-extensions/pull/17) [`dfc949a`](https://github.com/Vahor/pi-extensions/commit/dfc949a016527ebe03e3264dd513cf147fdb0b89) Thanks [@Vahor](https://github.com/Vahor)! - Publish packages with npm so README metadata appears on npm and pi.dev.
+
 ## 0.0.11
 
 ### Patch Changes
