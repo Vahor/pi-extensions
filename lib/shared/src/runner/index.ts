@@ -149,16 +149,16 @@ function handleCommandResult(
 	const { command, cwd, print, context, result } = options;
 
 	if (print || context) {
-		const contextMessage =
+		const content =
 			context === true
-				? undefined
-				: formatContextMessage(
+				? formatContextMessage(
 						command,
 						cwd,
 						result.stdout,
 						result.stderr,
 						result.code,
-					);
+					)
+				: "";
 		renderCommandResult(
 			pi,
 			ctx,
@@ -168,8 +168,9 @@ function handleCommandResult(
 				code: result.code,
 				output: buildRenderedOutput(result),
 				includeInContext: context === true,
+				silent: !print,
 			},
-			contextMessage,
+			{ content, display: print },
 		);
 	}
 }
@@ -217,7 +218,7 @@ export async function runCommands(
 			handleCommandResult(pi, ctx, {
 				command,
 				cwd: resolvedCwd,
-				print: true,
+				print,
 				context,
 				result: { code: 1, stdout: "", stderr: message },
 			});

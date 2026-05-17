@@ -40,6 +40,8 @@ export function showLevel(options: ShowLevelOptions): void {
 		interactive:
 			c.payload?.commands?.some((command) => command.interactive === true) ??
 			false,
+		silent:
+			c.payload?.commands?.every((command) => command.print === false) ?? false,
 	}));
 
 	const displayPrefix = prefixPath

@@ -10,9 +10,9 @@
 			"key": "<leader>shift+h",
 			"commands": ["sleep 1 && echo 'hello'"],
 			"description": "Hello World",
-			"print": false,
+			"print": true,
 			"interactive": false,
-			"context": false
+			"context": true
 		},
 		{
 			"key": "<leader>h",
@@ -20,7 +20,23 @@
 			"description": "Hello World",
 			"print": true,
 			"interactive": false,
+			"context": false
+		},
+		{
+			"key": "<leader>shift+j",
+			"commands": ["sleep 1 && echo 'hello'"],
+			"description": "Hello World",
+			"print": false,
+			"interactive": false,
 			"context": true
+		},
+		{
+			"key": "<leader>j",
+			"commands": ["sleep 1 && echo 'hello'"],
+			"description": "Hello World",
+			"print": false,
+			"interactive": false,
+			"context": false
 		},
 		{
 			"key": "<leader>p",

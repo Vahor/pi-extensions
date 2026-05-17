@@ -12,6 +12,7 @@ export interface LeaderEntry {
 	hasAction: boolean;
 	context: boolean;
 	interactive: boolean;
+	silent?: boolean;
 }
 
 /**
@@ -127,16 +128,41 @@ export class WhichKeyOverlay {
 	private formatEntry(entry: LeaderEntry, colWidth: number, th: Theme): string {
 		const isPrefix = !entry.hasAction;
 		const keyText = formatLeaderKeySegment(entry.key).padEnd(6);
-		const keyColor = isPrefix
-			? th.fg("warning", keyText)
-			: th.fg(entry.context ? "success" : "accent", keyText);
-		const marker = entry.interactive ? th.fg("bashMode", "$ ") : "";
-		const markerWidth = entry.interactive ? 2 : 0;
-		const label = isPrefix ? th.fg("dim", `+${entry.label}`) : entry.label;
-		const labelWidth = Math.max(0, colWidth - 7 - markerWidth);
+		const keyColor = this.formatKey(entry, isPrefix, keyText, th);
+		const indicators = isPrefix ? "" : this.formatIndicators(entry);
+		const label = this.formatLabel(entry, isPrefix, th);
+		const labelWidth = Math.max(0, colWidth - 7 - visibleWidth(indicators));
 		const truncated = truncateToWidth(label, labelWidth, "...", true);
 		const padding = Math.max(0, labelWidth - visibleWidth(truncated));
-		return keyColor + marker + truncated + " ".repeat(padding);
+		return keyColor + indicators + truncated + " ".repeat(padding);
+	}
+
+	private formatKey(
+		entry: LeaderEntry,
+		isPrefix: boolean,
+		keyText: string,
+		th: Theme,
+	): string {
+		const styled = th.fg(isPrefix ? "warning" : "accent", keyText);
+		if (isPrefix) return styled;
+		if (!entry.silent) {
+			return th.bold(styled);
+		}
+		return styled;
+	}
+
+	private formatIndicators(entry: LeaderEntry): string {
+		return entry.interactive ? "$ " : entry.context ? "# " : "  ";
+	}
+
+	private formatLabel(
+		entry: LeaderEntry,
+		isPrefix: boolean,
+		th: Theme,
+	): string {
+		return isPrefix
+			? th.fg("customMessageLabel", `+${entry.label}`)
+			: th.fg("syntaxString", entry.label);
 	}
 
 	invalidate(): void {}

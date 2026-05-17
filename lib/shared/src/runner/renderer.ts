@@ -22,6 +22,7 @@ export interface CommandRenderDetails {
 	code: number;
 	output: string;
 	includeInContext: boolean;
+	silent?: boolean;
 }
 
 export function buildRenderedOutput(result: CommandOutputForRender): string {
@@ -29,6 +30,10 @@ export function buildRenderedOutput(result: CommandOutputForRender): string {
 		.filter(Boolean)
 		.join("\n");
 	return combinedOutput;
+}
+
+function formatRenderedCommand(details: CommandRenderDetails): string {
+	return details.silent ? `${details.command} (silent)` : details.command;
 }
 
 export function createCompletedBashExecutionComponent(
@@ -39,7 +44,7 @@ export function createCompletedBashExecutionComponent(
 	} = { expanded: false },
 ): BashExecutionComponent {
 	const component = new BashExecutionComponent(
-		details.command,
+		formatRenderedCommand(details),
 		options.tui as BashExecutionTui,
 		!details.includeInContext,
 	);
@@ -77,13 +82,18 @@ export function renderCommandResult(
 	pi: ExtensionAPI,
 	ctx: ExtensionContext,
 	details: CommandRenderDetails,
+	options: {
+		content: string;
+		display: boolean;
+	},
 ): void {
-	if (!ctx.hasUI && !details.includeInContext) return;
+	const display = options.display && ctx.hasUI;
+	if (!display && !details.includeInContext) return;
 
 	pi.sendMessage({
 		customType: runnerCommandMessageType,
-		content: "",
-		display: ctx.hasUI,
+		content: options.content,
+		display,
 		details,
 	});
 }
