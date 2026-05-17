@@ -28,7 +28,7 @@
 		"schemas": "bun scripts/generate-config-schemas.ts && bunx @biomejs/biome format packages/*/schemas/*.json --write",
 		"schemas:check": "bun run schemas && git diff --exit-code -- packages/pi-hooks/schemas/hooks.schema.json packages/pi-keymap/schemas/keymap.schema.json",
 		"ci:version": "bunx @changesets/cli version && bun update",
-		"ci:publish": "for dir in packages/*; do (cd \"$dir\" && bun run build && bun publish || true); done && bunx changeset tag"
+		"ci:publish": "bun run build && bunx @changesets/cli publish"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.4.15",
