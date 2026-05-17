@@ -34,6 +34,11 @@ export function showLevel(options: ShowLevelOptions): void {
 		key: c.key,
 		label: c.payload ? getEntryLabel(c.payload) : "",
 		hasAction: c.payload ? hasAction(c.payload) : false,
+		context:
+			c.payload?.commands?.some((command) => command.context === true) ?? false,
+		interactive:
+			c.payload?.commands?.some((command) => command.interactive === true) ??
+			false,
 	}));
 
 	const displayPrefix = prefixPath
