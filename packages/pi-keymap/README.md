@@ -37,7 +37,7 @@ If neither file exists, the extension creates `.pi/keymap.json` with an empty co
     },
     {
       "key": "<leader>p",
-      "description": "Draft prompt in vim",
+      "description": "Draft prompt in pi editor",
       "prompt": "Default prompt content",
       "send": false,
       "open": true
@@ -62,9 +62,9 @@ If neither file exists, the extension creates `.pi/keymap.json` with an empty co
 | `keymaps[].key` | `string` | Yes | Key combination or `<leader>key` |
 | `keymaps[].description` | `string` | No | Label shown in the which-key overlay (falls back to first command) |
 | `keymaps[].commands` | `array` | No | Shell commands to run. Required for command keymaps. |
-| `keymaps[].prompt` | `string` | No | Default prompt text. Opens in vim by default, then saved content is placed in the input editor or sent. |
+| `keymaps[].prompt` | `string` | No | Default prompt text. |
 | `keymaps[].send` | `boolean` | No | For prompt keymaps, send saved content immediately instead of placing it in the input editor. Defaults `false` |
-| `keymaps[].open` | `boolean` | No | For prompt keymaps, open vim before using the prompt. Defaults `true`; `false` places the prompt in the input editor without opening vim. |
+| `keymaps[].open` | `boolean` | No | For prompt keymaps, open editor before using the prompt. Defaults `true`; `false` places the prompt in the input area directly. |
 | `keymaps[].print` | `boolean` | No | Print command output in the UI. Defaults `true` |
 | `keymaps[].context` | `boolean` | No | Add command output to the agent context |
 | `keymaps[].interactive` | `boolean` | No | Default interactive mode for commands in this keymap |
