@@ -1,2 +1,0 @@
-- Use BashRenderer from pi to run commands instead of using ui.notify
-- Somehow add keymaps on /reload, and any other commands

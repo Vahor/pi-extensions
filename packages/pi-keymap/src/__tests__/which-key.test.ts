@@ -143,6 +143,13 @@ describe("WhichKeyOverlay", () => {
 		bold: (text: string) => text,
 	} as unknown as Theme;
 
+	const styledTheme = {
+		fg: (color: string, text: string) => `<${color}>${text}</${color}>`,
+		bold: (_text: string) => {
+			throw new Error("bold should not be used");
+		},
+	} as unknown as Theme;
+
 	test("displays shift+letter segments as uppercase letters", () => {
 		const overlay = new WhichKeyOverlay(
 			plainTheme,
@@ -164,6 +171,58 @@ describe("WhichKeyOverlay", () => {
 			const text = overlay.render(40).join("\n");
 			expect(text).toContain("H       Help");
 			expect(text).not.toContain("shift+h");
+		} finally {
+			overlay.dispose();
+		}
+	});
+
+	test("does not bold command keys", () => {
+		const overlay = new WhichKeyOverlay(
+			styledTheme,
+			[
+				{
+					key: "t",
+					label: "Test",
+					hasAction: true,
+					context: false,
+					interactive: false,
+				},
+			],
+			() => {},
+			() => {},
+			"<space>",
+		);
+
+		try {
+			expect(() => overlay.render(200)).not.toThrow();
+		} finally {
+			overlay.dispose();
+		}
+	});
+
+	test("marks only the silent suffix as dim", () => {
+		const overlay = new WhichKeyOverlay(
+			styledTheme,
+			[
+				{
+					key: "s",
+					label: "Silent",
+					hasAction: true,
+					context: false,
+					interactive: false,
+					silent: true,
+				},
+			],
+			() => {},
+			() => {},
+			"<space>",
+		);
+
+		try {
+			const text = overlay.render(200).join("\n");
+			expect(text).toContain(
+				"<syntaxString>Silent</syntaxString><dim> (silent)</dim>",
+			);
 		} finally {
 			overlay.dispose();
 		}

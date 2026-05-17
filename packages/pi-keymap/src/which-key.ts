@@ -128,7 +128,7 @@ export class WhichKeyOverlay {
 	private formatEntry(entry: LeaderEntry, colWidth: number, th: Theme): string {
 		const isPrefix = !entry.hasAction;
 		const keyText = formatLeaderKeySegment(entry.key).padEnd(6);
-		const keyColor = this.formatKey(entry, isPrefix, keyText, th);
+		const keyColor = this.formatKey(isPrefix, keyText, th);
 		const indicators = isPrefix ? "" : this.formatIndicators(entry);
 		const label = this.formatLabel(entry, isPrefix, th);
 		const labelWidth = Math.max(0, colWidth - 7 - visibleWidth(indicators));
@@ -137,18 +137,8 @@ export class WhichKeyOverlay {
 		return keyColor + indicators + truncated + " ".repeat(padding);
 	}
 
-	private formatKey(
-		entry: LeaderEntry,
-		isPrefix: boolean,
-		keyText: string,
-		th: Theme,
-	): string {
-		const styled = th.fg(isPrefix ? "warning" : "accent", keyText);
-		if (isPrefix) return styled;
-		if (!entry.silent) {
-			return th.bold(styled);
-		}
-		return styled;
+	private formatKey(isPrefix: boolean, keyText: string, th: Theme): string {
+		return th.fg(isPrefix ? "warning" : "accent", keyText);
 	}
 
 	private formatIndicators(entry: LeaderEntry): string {
@@ -160,9 +150,15 @@ export class WhichKeyOverlay {
 		isPrefix: boolean,
 		th: Theme,
 	): string {
-		return isPrefix
+		const label = isPrefix
 			? th.fg("customMessageLabel", `+${entry.label}`)
 			: th.fg("syntaxString", entry.label);
+
+		if (!isPrefix && entry.silent) {
+			return label + th.fg("dim", " (silent)");
+		}
+
+		return label;
 	}
 
 	invalidate(): void {}

@@ -13,6 +13,12 @@ Pi extensions monorepo for [pi](https://pi.dev)
 | [@vahor/pi-hooks](./packages/pi-hooks) | Run shell commands on pi lifecycle events |
 | [@vahor/pi-keymap](./packages/pi-keymap) | Custom keyboard shortcuts with command execution |
 
+
+## Development
+
+1. Build packages using `bun run build`
+2. Test in pi using `pi -ne -e packages/pi-keymap/dist/index.js`, update path to the correct package
+
 ## License
 
 MIT

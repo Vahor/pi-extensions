@@ -113,8 +113,8 @@ Which-key entry styles:
 
 | Mapping state | Style |
 |---------------|-------|
-| Default command | Accent key, bold when output is printed |
-| `print: false` | Accent key, normal weight |
+| Default command | Accent key |
+| `print: false` | Accent key, appends dim `(silent)` |
 | `context: true` | Prefixed with `#` |
 | `interactive: true` | Prefixed with `$` |
 | Prefix/group node | Warning key + purple `+` label |
