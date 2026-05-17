@@ -1,5 +1,11 @@
 # @vahor/pi-keymap
 
+## 0.0.11
+
+### Patch Changes
+
+- [`0f85ece`](https://github.com/Vahor/pi-extensions/commit/0f85ece40f44b72d4a4fab2a142bddabd8efcf8b) Thanks [@Vahor](https://github.com/Vahor)! - Update which-key styling to remove bold keys and show a dim silent marker.
+
 ## 0.0.10
 
 ### Patch Changes
