@@ -71,8 +71,6 @@ If neither file exists, the extension creates `.pi/keymap.json` with an empty co
 
 `commands`, `prompt`, and grouping entries are mutually exclusive shapes: use `commands` for shell commands, `prompt` for prompt drafts, or neither for a leader grouping node. `print`, `context`, and `interactive` can be overridden at command level. Command-level wins over keymap-level.
 
-For prompt keymaps, `:q!` in vim cancels without changing the pi input. `:wq` saves; with `send: true` the saved content is sent immediately, otherwise it is inserted into the input editor. For now, prompt keymaps open `vim` directly.
-
 ### Key format
 
 `modifier+key` where modifiers are `ctrl`, `shift`, `alt`, `super` (e.g. `ctrl+shift+p`, `alt+x`).
