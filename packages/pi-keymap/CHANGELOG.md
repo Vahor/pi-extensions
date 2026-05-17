@@ -1,5 +1,19 @@
 # @vahor/pi-keymap
 
+## 0.0.10
+
+### Patch Changes
+
+- [#14](https://github.com/Vahor/pi-extensions/pull/14) [`a940c9f`](https://github.com/Vahor/pi-extensions/commit/a940c9fa39cb4018a4b0ba99bd74c732519758c0) Thanks [@Vahor](https://github.com/Vahor)! - Updated the bash renderer.
+
+- [#14](https://github.com/Vahor/pi-extensions/pull/14) [`a940c9f`](https://github.com/Vahor/pi-extensions/commit/a940c9fa39cb4018a4b0ba99bd74c732519758c0) Thanks [@Vahor](https://github.com/Vahor)! - Improve command flag display colors and mark silent rendered commands.
+
+- [#14](https://github.com/Vahor/pi-extensions/pull/14) [`a940c9f`](https://github.com/Vahor/pi-extensions/commit/a940c9fa39cb4018a4b0ba99bd74c732519758c0) Thanks [@Vahor](https://github.com/Vahor)! - Updated colors/icons for interactive and context in the keymap menu.
+
+- [#14](https://github.com/Vahor/pi-extensions/pull/14) [`a940c9f`](https://github.com/Vahor/pi-extensions/commit/a940c9fa39cb4018a4b0ba99bd74c732519758c0) Thanks [@Vahor](https://github.com/Vahor)! - Respect `print: false` when command output is also added to context.
+
+- [#14](https://github.com/Vahor/pi-extensions/pull/14) [`a940c9f`](https://github.com/Vahor/pi-extensions/commit/a940c9fa39cb4018a4b0ba99bd74c732519758c0) Thanks [@Vahor](https://github.com/Vahor)! - Fix which-key leader mappings with Shift-letter keys so `shift+h` is treated as one key and displayed as `H`.
+
 ## 0.0.9
 
 ### Patch Changes

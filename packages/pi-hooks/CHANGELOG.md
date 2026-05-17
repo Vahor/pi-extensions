@@ -1,5 +1,15 @@
 # @vahor/pi-hooks
 
+## 0.0.9
+
+### Patch Changes
+
+- [#14](https://github.com/Vahor/pi-extensions/pull/14) [`a940c9f`](https://github.com/Vahor/pi-extensions/commit/a940c9fa39cb4018a4b0ba99bd74c732519758c0) Thanks [@Vahor](https://github.com/Vahor)! - Updated the bash renderer.
+
+- [#14](https://github.com/Vahor/pi-extensions/pull/14) [`a940c9f`](https://github.com/Vahor/pi-extensions/commit/a940c9fa39cb4018a4b0ba99bd74c732519758c0) Thanks [@Vahor](https://github.com/Vahor)! - Improve command flag display colors and mark silent rendered commands.
+
+- [#14](https://github.com/Vahor/pi-extensions/pull/14) [`a940c9f`](https://github.com/Vahor/pi-extensions/commit/a940c9fa39cb4018a4b0ba99bd74c732519758c0) Thanks [@Vahor](https://github.com/Vahor)! - Respect `print: false` when command output is also added to context.
+
 ## 0.0.8
 
 ### Patch Changes
