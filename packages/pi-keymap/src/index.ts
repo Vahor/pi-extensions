@@ -11,6 +11,7 @@ import type { KeymapEntry, KeymapsConfig } from "./config.js";
 import { EmptyKeymapsConfig, KeymapsConfigSchema } from "./config.js";
 import { isValidKey, parseLeaderKeySegments } from "./keys.js";
 import { showLevel } from "./ui.js";
+import { installUiActivityTracker } from "./ui-activity.js";
 
 function loadConfig(cwd: string): KeymapsConfig | undefined {
 	return Effect.runSync(
@@ -201,10 +202,12 @@ export default function (pi: ExtensionAPI) {
 		if (root.children.size === 0) return;
 
 		let leaderPressed = false;
+		const isUiActive = installUiActivityTracker(ctx.ui);
 
 		const unsubscribe = ctx.ui.onTerminalInput((data: string) => {
 			if (leaderPressed) return;
 			if (!matchesKey(data, config.leader as KeyId)) return;
+			if (isUiActive()) return;
 			// Only trigger when editor is empty (not while typing)
 			if (ctx.hasUI && ctx.ui.getEditorText().trim() !== "") return;
 
