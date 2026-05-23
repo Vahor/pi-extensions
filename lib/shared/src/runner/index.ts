@@ -1,155 +1,25 @@
-import { spawn } from "node:child_process";
 import { resolve } from "node:path";
 import type {
 	ExtensionAPI,
 	ExtensionContext,
 } from "@earendil-works/pi-coding-agent";
+import type { CommandEntry } from "./config.js";
+import { formatContextMessage } from "./context.js";
+import { runInteractiveCommand } from "./interactive.js";
 import { buildRenderedOutput, renderCommandResult } from "./renderer.js";
+import { startCommandSpinner } from "./spinner.js";
+import type { CommandResult } from "./types.js";
 
+export type { CommandEntry } from "./config.js";
 export { registerCommandRenderer } from "./renderer.js";
+export type { CommandResult } from "./types.js";
 
-export interface CommandEntry {
-	command: string;
-	cwd?: string;
-	timeout?: number;
-	print?: boolean;
-	context?: boolean;
-	interactive?: boolean;
-}
-
-const spinnerFrames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
-let spinnerId = 0;
-
-interface CommandResult {
-	stdout: string;
-	stderr: string;
-	code: number;
-}
-
-const MAX_CONTEXT_OUTPUT_LENGTH = 20_000;
-
-function truncateOutput(output: string): string {
-	if (output.length <= MAX_CONTEXT_OUTPUT_LENGTH) return output;
-
-	const truncationNote = `…\n[output truncated to ${MAX_CONTEXT_OUTPUT_LENGTH} characters; showing tail]\n`;
-	return `${truncationNote}${output.slice(
-		-(MAX_CONTEXT_OUTPUT_LENGTH - truncationNote.length),
-	)}`;
-}
-
-function formatCommand(command: string): string {
-	return command.length > 60 ? `${command.slice(0, 57)}...` : command;
-}
-
-function startCommandSpinner(
-	ctx: ExtensionContext,
-	command: string,
-	index: number,
-	silent: boolean,
-): () => void {
-	if (!ctx.hasUI) return () => {};
-
-	const statusKey = `runner:${index}`;
-	const theme = ctx.ui.theme;
-	const displayCommand = silent
-		? `${formatCommand(command)} (silent)`
-		: formatCommand(command);
-	const text = `${theme.fg("dim", `[${index}] `)}${theme.fg("bashMode", displayCommand)}`;
-	let frameIndex = 0;
-
-	const render = (): void => {
-		const frame = theme.fg("accent", spinnerFrames[frameIndex] ?? "⠋");
-		ctx.ui.setStatus(statusKey, `${frame} ${text}`);
-		frameIndex = (frameIndex + 1) % spinnerFrames.length;
+function resultFromError(error: unknown): CommandResult {
+	return {
+		code: 1,
+		stdout: "",
+		stderr: error instanceof Error ? error.message : String(error),
 	};
-
-	render();
-	const timer = setInterval(render, 100);
-
-	return () => {
-		clearInterval(timer);
-		ctx.ui.setStatus(statusKey, undefined);
-	};
-}
-
-async function runInteractiveCommand(
-	command: string,
-	cwd: string,
-	ctx: ExtensionContext,
-): Promise<CommandResult> {
-	if (!ctx.hasUI || !process.stdin.isTTY || !process.stdout.isTTY) {
-		const message = "interactive commands require pi's interactive TUI";
-		return {
-			stdout: "",
-			stderr: message,
-			code: 1,
-		};
-	}
-
-	return ctx.ui.custom<CommandResult>((tui, _theme, _kb, done) => {
-		const shell = process.env.SHELL || "/bin/sh";
-		let completed = false;
-
-		const finish = (result: CommandResult): void => {
-			if (completed) return;
-			completed = true;
-			tui.start();
-			tui.requestRender(true);
-			done({
-				...result,
-				stderr: result.stderr || "interactive command output is not captured",
-			});
-		};
-
-		tui.stop();
-
-		const child = spawn(shell, ["-c", command], {
-			cwd,
-			stdio: "inherit",
-			env: process.env,
-		});
-
-		child.on("error", (error) => {
-			finish({ code: 1, stderr: error.message, stdout: "" });
-		});
-		child.on("exit", (code, signal) => {
-			const message = signal ? `terminated by ${signal}` : undefined;
-			finish({
-				code: code ?? (signal ? 1 : 0),
-				stderr: message ?? "",
-				stdout: "",
-			});
-		});
-
-		return { render: () => [], invalidate: () => {} };
-	});
-}
-
-function formatContextMessage(
-	command: string,
-	cwd: string,
-	stdout: string,
-	stderr: string,
-	code: number,
-): string {
-	const sections = [`Ran \`${command}\``, `Working directory: \`${cwd}\``];
-	const truncatedStdout = truncateOutput(stdout);
-	const truncatedStderr = truncateOutput(stderr);
-
-	if (stdout) {
-		sections.push(`stdout:\n\`\`\`\n${truncatedStdout}\n\`\`\``);
-	}
-	if (stderr) {
-		sections.push(`stderr:\n\`\`\`\n${truncatedStderr}\n\`\`\``);
-	}
-	if (!stdout && !stderr) {
-		sections.push("(no output)");
-	}
-	if (code !== 0) {
-		sections.push(`Command exited with code ${code}.`);
-	}
-
-	return sections.join("\n\n");
 }
 
 function handleCommandResult(
@@ -165,31 +35,52 @@ function handleCommandResult(
 ): void {
 	const { command, cwd, print, context, result } = options;
 
-	if (print || context) {
-		const content =
-			context === true
-				? formatContextMessage(
-						command,
-						cwd,
-						result.stdout,
-						result.stderr,
-						result.code,
-					)
-				: "";
-		renderCommandResult(
-			pi,
-			ctx,
-			{
-				command,
-				cwd,
-				code: result.code,
-				output: buildRenderedOutput(result),
-				includeInContext: context === true,
-				silent: !print,
-			},
-			{ content, display: print },
-		);
+	if (!print && !context) return;
+
+	const content = context ? formatContextMessage(command, cwd, result) : "";
+	renderCommandResult(
+		pi,
+		ctx,
+		{
+			command,
+			cwd,
+			code: result.code,
+			output: buildRenderedOutput(result),
+			includeInContext: context === true,
+			silent: !print,
+		},
+		{ content, display: print },
+	);
+}
+
+async function executeCommand(
+	entry: CommandEntry,
+	cwd: string,
+	pi: ExtensionAPI,
+	ctx: ExtensionContext,
+): Promise<{ cwd: string; result: CommandResult }> {
+	const resolvedCwd = entry.cwd ? resolve(cwd, entry.cwd) : cwd;
+
+	if (entry.interactive) {
+		return {
+			cwd: resolvedCwd,
+			result: await runInteractiveCommand(
+				entry.command,
+				resolvedCwd,
+				ctx,
+				entry.timeout ?? 30_000,
+			),
+		};
 	}
+
+	const shell = process.env.SHELL || "/bin/sh";
+	return {
+		cwd: resolvedCwd,
+		result: await pi.exec(shell, ["-c", entry.command], {
+			cwd: resolvedCwd,
+			timeout: entry.timeout ?? 30_000,
+		}),
+	};
 }
 
 export async function runCommands(
@@ -197,47 +88,34 @@ export async function runCommands(
 	cwd: string,
 	pi: ExtensionAPI,
 	ctx: ExtensionContext,
-	_label: string,
 ): Promise<void> {
-	for (const {
-		command,
-		cwd: commandCwd,
-		timeout,
-		print = true,
-		context,
-		interactive,
-	} of commands) {
-		const index = ++spinnerId;
-		const resolvedCwd = commandCwd ? resolve(cwd, commandCwd) : cwd;
-		const shell = process.env.SHELL || "/bin/sh";
-
-		const stopSpinner = interactive
+	for (const entry of commands) {
+		const print = entry.print ?? true;
+		const stopSpinner = entry.interactive
 			? () => {}
-			: startCommandSpinner(ctx, command, index, !print);
+			: startCommandSpinner(ctx, entry.command, !print);
 
 		try {
-			const result = interactive
-				? await runInteractiveCommand(command, resolvedCwd, ctx)
-				: await pi.exec(shell, ["-c", command], {
-						cwd: resolvedCwd,
-						timeout: timeout ?? 30_000,
-					});
-
+			const { cwd: commandCwd, result } = await executeCommand(
+				entry,
+				cwd,
+				pi,
+				ctx,
+			);
 			handleCommandResult(pi, ctx, {
-				command,
-				cwd: resolvedCwd,
+				command: entry.command,
+				cwd: commandCwd,
 				print,
-				context,
+				context: entry.context,
 				result,
 			});
-		} catch (err) {
-			const message = err instanceof Error ? err.message : String(err);
+		} catch (error) {
 			handleCommandResult(pi, ctx, {
-				command,
-				cwd: resolvedCwd,
+				command: entry.command,
+				cwd: entry.cwd ? resolve(cwd, entry.cwd) : cwd,
 				print,
-				context,
-				result: { code: 1, stdout: "", stderr: message },
+				context: entry.context,
+				result: resultFromError(error),
 			});
 		} finally {
 			stopSpinner();

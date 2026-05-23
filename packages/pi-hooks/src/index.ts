@@ -46,7 +46,7 @@ export default function (pi: ExtensionAPI) {
 		if (!entries || entries.length === 0) continue;
 
 		pi.on(eventName as Parameters<typeof pi.on>[0], async (_event, ctx) => {
-			await runCommands(entries, cwd, pi, ctx, `Hook [${eventName}]`);
+			await runCommands(entries, cwd, pi, ctx);
 		});
 	}
 }
