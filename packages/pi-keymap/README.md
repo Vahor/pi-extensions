@@ -10,7 +10,7 @@ pi install npm:@vahor/pi-keymap
 
 ## Config
 
-Configuration is loaded from both locations and merged recursively:
+Configuration is loaded from both locations and merged recursively. `keymaps` arrays are merged by `key`, so project entries replace global entries with the same key:
 
 | Location | Scope |
 |----------|-------|
@@ -64,7 +64,7 @@ If neither file exists, the extension creates `.pi/keymap.json` with an empty co
 | `keymaps[].commands` | `array` | No | Shell commands to run. Required for command keymaps. |
 | `keymaps[].prompt` | `string` | No | Default prompt text. |
 | `keymaps[].send` | `boolean` | No | For prompt keymaps, send saved content immediately instead of placing it in the input editor. Defaults `false` |
-| `keymaps[].open` | `boolean` | No | For prompt keymaps, open editor before using the prompt. Defaults `true`; `false` places the prompt in the input area directly. |
+| `keymaps[].open` | `boolean` | No | For prompt keymaps, open editor before using the prompt. Defaults `true`; `false` uses the prompt immediately according to `send`. |
 | `keymaps[].print` | `boolean` | No | Print command output in the UI. Defaults `true` |
 | `keymaps[].context` | `boolean` | No | Add command output to the agent context |
 | `keymaps[].interactive` | `boolean` | No | Default interactive mode for commands in this keymap |
@@ -96,12 +96,12 @@ Each entry can be a string (just the command) or an object:
 |-------|------|----------|---------|-------------|
 | `command` | `string` | Yes | – | Shell command to run |
 | `cwd` | `string` | No | project root | Working directory (relative) |
-| `timeout` | `number` | No | `30000` captured, none interactive | Timeout in milliseconds |
-| `print` | `boolean` | No | `true` | Log stdout as info notification on success |
+| `timeout` | `number` | No | `30000` | Timeout in milliseconds |
+| `print` | `boolean` | No | `true` | Render command output in pi |
 | `context` | `boolean` | No | `false` | Add command output to the agent context |
 | `interactive` | `boolean` | No | `false` | Suspend pi's TUI and run with full terminal access. Use for commands like `lazygit`, `vim`, `htop`, or `fzf`. Output is not captured. |
 
-Errors show as UI notifications with exit code and truncated output. Interactive commands restore and fully redraw pi after they exit.
+Command output is rendered in pi when `print` or `context` is enabled. Interactive commands restore and fully redraw pi after they exit.
 
 ## Leader key & which-key overlay
 

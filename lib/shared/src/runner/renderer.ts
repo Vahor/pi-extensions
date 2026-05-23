@@ -6,7 +6,6 @@ import type {
 import { BashExecutionComponent } from "@earendil-works/pi-coding-agent";
 
 const runnerCommandMessageType = "vahor.runner.command";
-export const maxRenderedOutputLength = 400;
 const registeredRenderers = new WeakSet<ExtensionAPI>();
 
 type BashExecutionTui = ConstructorParameters<typeof BashExecutionComponent>[1];

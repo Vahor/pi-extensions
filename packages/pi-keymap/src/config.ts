@@ -1,35 +1,23 @@
+import {
+	type CommandEntry,
+	CommandEntrySchema,
+} from "@vahor/shared/runner/config";
 import { Schema } from "effect";
 
 export const KeymapConfigSchemaUrl =
 	"https://raw.githubusercontent.com/Vahor/pi-extensions/main/packages/pi-keymap/schemas/keymap.schema.json";
 
-const KeymapCommandStruct = Schema.Struct({
-	command: Schema.String,
-	cwd: Schema.optional(Schema.String),
-	timeout: Schema.optional(Schema.Number),
-	print: Schema.optional(Schema.Boolean),
-	context: Schema.optional(Schema.Boolean),
-	interactive: Schema.optional(Schema.Boolean),
-});
+export const KeymapCommandSchema = CommandEntrySchema;
 
-export const KeymapCommandSchema = Schema.transform(
-	Schema.Union(Schema.String, KeymapCommandStruct),
-	KeymapCommandStruct,
-	{
-		decode: (from) => (typeof from === "string" ? { command: from } : from),
-		encode: (to) => to,
-	},
-);
-
-const Forbidden = Schema.optional(Schema.Never);
+const DisallowedField = Schema.optional(Schema.Never);
 
 const RawKeymapCommandEntry = Schema.Struct({
 	key: Schema.String,
 	description: Schema.optional(Schema.String),
 	commands: Schema.NonEmptyArray(KeymapCommandSchema),
-	prompt: Forbidden,
-	send: Forbidden,
-	open: Forbidden,
+	prompt: DisallowedField,
+	send: DisallowedField,
+	open: DisallowedField,
 	print: Schema.optional(Schema.Boolean),
 	context: Schema.optional(Schema.Boolean),
 	interactive: Schema.optional(Schema.Boolean),
@@ -38,11 +26,11 @@ const RawKeymapCommandEntry = Schema.Struct({
 const RawKeymapPromptEntry = Schema.Struct({
 	key: Schema.String,
 	description: Schema.optional(Schema.String),
-	commands: Forbidden,
+	commands: DisallowedField,
 	prompt: Schema.String,
-	print: Forbidden,
-	context: Forbidden,
-	interactive: Forbidden,
+	print: DisallowedField,
+	context: DisallowedField,
+	interactive: DisallowedField,
 	send: Schema.optional(Schema.Boolean),
 	open: Schema.optional(Schema.Boolean),
 });
@@ -50,23 +38,21 @@ const RawKeymapPromptEntry = Schema.Struct({
 const RawKeymapGroupEntry = Schema.Struct({
 	key: Schema.String,
 	description: Schema.optional(Schema.String),
-	commands: Forbidden,
-	prompt: Forbidden,
-	print: Forbidden,
-	context: Forbidden,
-	interactive: Forbidden,
-	send: Forbidden,
-	open: Forbidden,
+	commands: DisallowedField,
+	prompt: DisallowedField,
+	print: DisallowedField,
+	context: DisallowedField,
+	interactive: DisallowedField,
+	send: DisallowedField,
+	open: DisallowedField,
 });
 
-/** Raw keymap entry shape from the config file */
 const RawKeymapEntry = Schema.Union(
 	RawKeymapCommandEntry,
 	RawKeymapPromptEntry,
 	RawKeymapGroupEntry,
 );
 
-/** Decoded keymap entry with leader flag resolved */
 const DecodedKeymapEntry = Schema.Struct({
 	leaderKey: Schema.String,
 	description: Schema.optional(Schema.String),
@@ -80,11 +66,61 @@ const DecodedKeymapEntry = Schema.Struct({
 	leader: Schema.Boolean,
 });
 
+const leaderPrefix = "<leader>";
+
+function withCommandDefaults(
+	commands: readonly CommandEntry[] | undefined,
+	entry: {
+		print?: boolean;
+		context?: boolean;
+		interactive?: boolean;
+	},
+): readonly CommandEntry[] | undefined {
+	return commands?.map((command) => ({
+		...command,
+		print: command.print ?? entry.print,
+		context: command.context ?? entry.context,
+		interactive: command.interactive ?? entry.interactive,
+	}));
+}
+
+function decodeKeymapEntry(km: Schema.Schema.Type<typeof RawKeymapEntry>) {
+	const leader = km.key.startsWith(leaderPrefix);
+	return {
+		leaderKey: leader ? km.key.slice(leaderPrefix.length) : km.key,
+		description: km.description,
+		commands: withCommandDefaults(km.commands, km),
+		prompt: km.prompt,
+		send: km.send,
+		open: km.open,
+		print: km.print,
+		context: km.context,
+		interactive: km.interactive,
+		leader,
+	};
+}
+
+type EncodableKeymapEntry = Schema.Schema.Encoded<typeof DecodedKeymapEntry>;
+
+function encodeKeymapEntry(km: EncodableKeymapEntry) {
+	return {
+		key: km.leader ? `${leaderPrefix}${km.leaderKey}` : km.leaderKey,
+		description: km.description,
+		commands: km.commands,
+		prompt: km.prompt,
+		send: km.send,
+		open: km.open,
+		print: km.print,
+		context: km.context,
+		interactive: km.interactive,
+	};
+}
+
 export type KeymapEntry = Schema.Schema.Type<typeof DecodedKeymapEntry>;
 
-/** Full decoded config with leader prefix resolved out */
 export const KeymapsConfigSchema = Schema.transform(
 	Schema.Struct({
+		$schema: Schema.optional(Schema.String),
 		keymaps: Schema.Array(RawKeymapEntry),
 		leader: Schema.String,
 	}),
@@ -95,40 +131,11 @@ export const KeymapsConfigSchema = Schema.transform(
 	{
 		decode: (raw) => ({
 			leader: raw.leader,
-			keymaps: raw.keymaps.map((km) => {
-				const isLeader = km.key.startsWith("<leader>");
-				return {
-					leaderKey: isLeader ? km.key.slice("<leader>".length) : km.key,
-					description: km.description,
-					commands: km.commands?.map((command) => ({
-						...command,
-						print: command.print ?? km.print,
-						context: command.context ?? km.context,
-						interactive: command.interactive ?? km.interactive,
-					})),
-					prompt: km.prompt,
-					send: km.send,
-					open: km.open,
-					print: km.print,
-					context: km.context,
-					interactive: km.interactive,
-					leader: isLeader,
-				};
-			}),
+			keymaps: raw.keymaps.map(decodeKeymapEntry),
 		}),
 		encode: (decoded) => ({
 			leader: decoded.leader,
-			keymaps: decoded.keymaps.map((km) => ({
-				key: km.leader ? `<leader>${km.leaderKey}` : km.leaderKey,
-				description: km.description,
-				commands: km.commands,
-				prompt: km.prompt,
-				send: km.send,
-				open: km.open,
-				print: km.print,
-				context: km.context,
-				interactive: km.interactive,
-			})),
+			keymaps: decoded.keymaps.map(encodeKeymapEntry),
 		}),
 		strict: false,
 	},
@@ -169,5 +176,5 @@ export const EmptyKeymapsConfig = {
 	keymaps: [],
 } as const;
 
-export type KeymapCommand = Schema.Schema.Type<typeof KeymapCommandSchema>;
+export type KeymapCommand = CommandEntry;
 export type KeymapsConfig = Schema.Schema.Type<typeof KeymapsConfigSchema>;

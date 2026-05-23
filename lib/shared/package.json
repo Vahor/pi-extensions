@@ -18,6 +18,10 @@
 			"types": "./src/runner/index.ts",
 			"import": "./src/runner/index.ts"
 		},
+		"./runner/config": {
+			"types": "./src/runner/config.ts",
+			"import": "./src/runner/config.ts"
+		},
 		"./trie": {
 			"types": "./src/trie.ts",
 			"import": "./src/trie.ts"

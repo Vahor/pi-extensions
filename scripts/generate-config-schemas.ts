@@ -25,8 +25,8 @@ const allowEditorSchemaProperty = (schema: JsonSchemaRoot): JsonSchemaRoot => {
 	return {
 		...schema,
 		properties: {
-			$schema: schemaProperty,
 			...schema.properties,
+			$schema: schemaProperty,
 		},
 	};
 };
