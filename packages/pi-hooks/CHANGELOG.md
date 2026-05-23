@@ -1,5 +1,11 @@
 # @vahor/pi-hooks
 
+## 0.0.11
+
+### Patch Changes
+
+- [#21](https://github.com/Vahor/pi-extensions/pull/21) [`00e2ffc`](https://github.com/Vahor/pi-extensions/commit/00e2ffc33f486e33c761ff8c730d3eca233a9432) Thanks [@Vahor](https://github.com/Vahor)! - Refactor shared command config and runner/keymap internals for maintainability, with stricter config validation.
+
 ## 0.0.10
 
 ### Patch Changes
