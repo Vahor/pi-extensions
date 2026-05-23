@@ -10,34 +10,33 @@ const isKeyedSettingsArray = (value: unknown): value is KeyedSetting[] =>
 	Array.isArray(value) && value.every(isKeyedSetting);
 
 const mergeKeyedSettings = (
-	a: KeyedSetting[],
-	b: KeyedSetting[],
+	base: KeyedSetting[],
+	override: KeyedSetting[],
 ): KeyedSetting[] => {
-	const result = new Map(a.map((setting) => [setting.key, setting]));
-	for (const setting of b) {
+	const result = new Map(base.map((setting) => [setting.key, setting]));
+	for (const setting of override) {
 		result.set(setting.key, setting);
 	}
 	return Array.from(result.values());
 };
 
 export const mergeSettings = (
-	a: Record<string, unknown>,
-	b: Record<string, unknown>,
+	base: Record<string, unknown>,
+	override: Record<string, unknown>,
 ): Record<string, unknown> => {
-	const result = { ...a };
-	for (const key of Object.keys(b)) {
-		const aVal = result[key];
-		const bVal = b[key];
+	const result = { ...base };
+	for (const key of Object.keys(override)) {
+		const baseValue = result[key];
+		const overrideValue = override[key];
 		if (
-			key === "keymaps" &&
-			isKeyedSettingsArray(aVal) &&
-			isKeyedSettingsArray(bVal)
+			isKeyedSettingsArray(baseValue) &&
+			isKeyedSettingsArray(overrideValue)
 		) {
-			result[key] = mergeKeyedSettings(aVal, bVal);
-		} else if (isRecord(aVal) && isRecord(bVal)) {
-			result[key] = mergeSettings(aVal, bVal);
+			result[key] = mergeKeyedSettings(baseValue, overrideValue);
+		} else if (isRecord(baseValue) && isRecord(overrideValue)) {
+			result[key] = mergeSettings(baseValue, overrideValue);
 		} else {
-			result[key] = bVal;
+			result[key] = overrideValue;
 		}
 	}
 	return result;
