@@ -1,32 +1,19 @@
+import {
+	type CommandEntry,
+	CommandEntrySchema,
+} from "@vahor/shared/runner/config";
 import { Schema } from "effect";
 import { PiEvent } from "./events.js";
 
 export const HooksConfigSchemaUrl =
 	"https://raw.githubusercontent.com/Vahor/pi-extensions/main/packages/pi-hooks/schemas/hooks.schema.json";
 
-const HookEntryStruct = Schema.Struct({
-	command: Schema.String,
-	cwd: Schema.optional(Schema.String),
-	timeout: Schema.optional(Schema.Number),
-	print: Schema.optional(Schema.Boolean),
-	context: Schema.optional(Schema.Boolean),
-	interactive: Schema.optional(Schema.Boolean),
-});
-
-export const HookEntrySchema = Schema.transform(
-	Schema.Union(Schema.String, HookEntryStruct),
-	HookEntryStruct,
-	{
-		decode: (from) => (typeof from === "string" ? { command: from } : from),
-		encode: (to) => to,
-	},
-);
-
 export const CommandHooksConfigSchema = Schema.Struct({
+	$schema: Schema.optional(Schema.String),
 	hooks: Schema.partial(
 		Schema.Record({
 			key: PiEvent,
-			value: Schema.Array(HookEntrySchema),
+			value: Schema.Array(CommandEntrySchema),
 		}),
 	),
 }).annotations({
@@ -47,7 +34,7 @@ export const EmptyCommandHooksConfig = {
 	hooks: {},
 } as const;
 
-export type HookEntry = Schema.Schema.Type<typeof HookEntrySchema>;
+export type HookEntry = CommandEntry;
 export type CommandHooksConfig = Schema.Schema.Type<
 	typeof CommandHooksConfigSchema
 >;

@@ -14,7 +14,7 @@ export const decodeConfig = <A, I>(
 	value: unknown,
 	schema: Schema.Schema<A, I>,
 ): Effect.Effect<A, ValidationError> =>
-	Schema.decodeUnknown(schema)(value).pipe(
+	Schema.decodeUnknown(schema, { onExcessProperty: "error" })(value).pipe(
 		Effect.mapError((errors) => new ValidationError(errors)),
 	);
 

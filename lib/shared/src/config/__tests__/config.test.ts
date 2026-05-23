@@ -133,6 +133,7 @@ describe("getProjectConfigPath", () => {
 
 describe("readConfig", () => {
 	const HookSchema = Schema.Struct({
+		$schema: Schema.optional(Schema.String),
 		hooks: Schema.optional(
 			Schema.Record({
 				key: Schema.String,

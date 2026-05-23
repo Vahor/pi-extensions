@@ -2,9 +2,14 @@ import { describe, expect, test } from "bun:test";
 import { Schema } from "effect";
 import { KeymapsConfigSchema } from "../config.js";
 
+const decodeConfig = (value: unknown) =>
+	Schema.decodeUnknownSync(KeymapsConfigSchema, {
+		onExcessProperty: "error",
+	})(value);
+
 describe("KeymapsConfigSchema", () => {
 	test("validates a correct config", () => {
-		const result = Schema.decodeUnknownSync(KeymapsConfigSchema)({
+		const result = decodeConfig({
 			leader: "space",
 			keymaps: [
 				{
@@ -19,7 +24,7 @@ describe("KeymapsConfigSchema", () => {
 	});
 
 	test("validates commands with object form", () => {
-		const result = Schema.decodeUnknownSync(KeymapsConfigSchema)({
+		const result = decodeConfig({
 			leader: "space",
 			keymaps: [
 				{
@@ -48,7 +53,7 @@ describe("KeymapsConfigSchema", () => {
 	});
 
 	test("inherits entry-level options for string commands", () => {
-		const result = Schema.decodeUnknownSync(KeymapsConfigSchema)({
+		const result = decodeConfig({
 			leader: "space",
 			keymaps: [
 				{
@@ -70,7 +75,7 @@ describe("KeymapsConfigSchema", () => {
 	});
 
 	test("validates mixed string and object commands", () => {
-		const result = Schema.decodeUnknownSync(KeymapsConfigSchema)({
+		const result = decodeConfig({
 			leader: "space",
 			keymaps: [
 				{
@@ -88,15 +93,25 @@ describe("KeymapsConfigSchema", () => {
 	});
 
 	test("allows empty keymaps array", () => {
-		const result = Schema.decodeUnknownSync(KeymapsConfigSchema)({
+		const result = decodeConfig({
 			leader: "space",
 			keymaps: [],
 		});
 		expect(result.keymaps).toEqual([]);
 	});
 
+	test("fails on unknown config keys", () => {
+		expect(() =>
+			decodeConfig({
+				leader: "space",
+				keymaps: [],
+				extra: true,
+			}),
+		).toThrow();
+	});
+
 	test("resolves leader prefix into leaderKey with leader: true", () => {
-		const result = Schema.decodeUnknownSync(KeymapsConfigSchema)({
+		const result = decodeConfig({
 			leader: "space",
 			keymaps: [
 				{ key: "<leader>t", commands: ["bun run test"] },
@@ -111,7 +126,7 @@ describe("KeymapsConfigSchema", () => {
 	});
 
 	test("mixed leader and direct keymaps", () => {
-		const result = Schema.decodeUnknownSync(KeymapsConfigSchema)({
+		const result = decodeConfig({
 			leader: "space",
 			keymaps: [
 				{ key: "<leader>t", commands: ["bun run test"] },
@@ -124,7 +139,7 @@ describe("KeymapsConfigSchema", () => {
 	});
 
 	test("carries through optional description", () => {
-		const result = Schema.decodeUnknownSync(KeymapsConfigSchema)({
+		const result = decodeConfig({
 			leader: "space",
 			keymaps: [
 				{
@@ -141,7 +156,7 @@ describe("KeymapsConfigSchema", () => {
 	});
 
 	test("encode round-trips correctly", () => {
-		const decoded = Schema.decodeUnknownSync(KeymapsConfigSchema)({
+		const decoded = decodeConfig({
 			leader: "space",
 			keymaps: [
 				{ key: "<leader>t", commands: ["bun test"] },
@@ -156,7 +171,7 @@ describe("KeymapsConfigSchema", () => {
 
 	test("fails on missing key", () => {
 		expect(() =>
-			Schema.decodeUnknownSync(KeymapsConfigSchema)({
+			decodeConfig({
 				leader: "space",
 				keymaps: [{ commands: ["echo"] }],
 			}),
@@ -164,7 +179,7 @@ describe("KeymapsConfigSchema", () => {
 	});
 
 	test("allows missing commands (prefix-only node)", () => {
-		const result = Schema.decodeUnknownSync(KeymapsConfigSchema)({
+		const result = decodeConfig({
 			leader: "space",
 			keymaps: [{ key: "<leader>t", description: "Test prefix" }],
 		});
@@ -175,7 +190,7 @@ describe("KeymapsConfigSchema", () => {
 
 	test("fails when commands and prompt are both present", () => {
 		expect(() =>
-			Schema.decodeUnknownSync(KeymapsConfigSchema)({
+			decodeConfig({
 				leader: "space",
 				keymaps: [{ key: "ctrl+x", commands: ["echo"], prompt: "text" }],
 			}),
@@ -184,7 +199,7 @@ describe("KeymapsConfigSchema", () => {
 
 	test("fails on empty commands array", () => {
 		expect(() =>
-			Schema.decodeUnknownSync(KeymapsConfigSchema)({
+			decodeConfig({
 				leader: "space",
 				keymaps: [{ key: "ctrl+x", commands: [] }],
 			}),
