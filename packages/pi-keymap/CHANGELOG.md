@@ -1,5 +1,13 @@
 # @vahor/pi-keymap
 
+## 0.0.13
+
+### Patch Changes
+
+- [#19](https://github.com/Vahor/pi-extensions/pull/19) [`df7aced`](https://github.com/Vahor/pi-extensions/commit/df7aced6f538a7acb862f6c2320a44000e04a24d) Thanks [@Vahor](https://github.com/Vahor)! - Avoid opening the leader which-key overlay while another extension custom UI is active.
+
+- [#21](https://github.com/Vahor/pi-extensions/pull/21) [`00e2ffc`](https://github.com/Vahor/pi-extensions/commit/00e2ffc33f486e33c761ff8c730d3eca233a9432) Thanks [@Vahor](https://github.com/Vahor)! - Refactor shared command config and runner/keymap internals for maintainability, with stricter config validation.
+
 ## 0.0.12
 
 ### Patch Changes
